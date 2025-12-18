@@ -258,20 +258,20 @@ echo
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if [ -f "$SCRIPT_DIR/virtual_usb_gadget_fixed.sh" ]; then
+    if [ -f "$SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh" ]; then
         echo -e "${BLUE}Starting Virtual USB Gadget installer...${NC}"
         echo ""
-        sudo bash "$SCRIPT_DIR/virtual_usb_gadget_fixed.sh"
+        sudo bash "$SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh"
         echo ""
         echo -e "${GREEN}✓ Virtual USB Gadget setup complete${NC}"
     else
         echo -e "${RED}✗ Virtual USB Gadget script not found${NC}"
-        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/virtual_usb_gadget_fixed.sh${NC}"
+        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh${NC}"
     fi
 else
     echo -e "${BLUE}⊘ Skipping Virtual USB Gadget installation${NC}"
     echo -e "${YELLOW}  You can install it later by running:${NC}"
-    echo -e "${YELLOW}  sudo ./virtual_usb_gadget_fixed.sh${NC}"
+    echo -e "${YELLOW}  sudo ./scripts/virtual_usb_gadget_fixed.sh${NC}"
 fi
 
 echo ""
@@ -349,20 +349,20 @@ echo
 echo ""
 
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    if [ -f "$SCRIPT_DIR/install_service.sh" ]; then
+    if [ -f "$SCRIPT_DIR/scripts/install_service.sh" ]; then
         echo -e "${BLUE}Starting service installer...${NC}"
         echo ""
-        bash "$SCRIPT_DIR/install_service.sh"
+        bash "$SCRIPT_DIR/scripts/install_service.sh"
         SERVICE_INSTALLED=true
     else
         echo -e "${RED}✗ Service installer script not found${NC}"
-        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/install_service.sh${NC}"
+        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/scripts/install_service.sh${NC}"
         SERVICE_INSTALLED=false
     fi
 else
     echo -e "${BLUE}⊘ Skipping service installation${NC}"
     echo -e "${YELLOW}  You can install it later by running:${NC}"
-    echo -e "${YELLOW}  ./install_service.sh${NC}"
+    echo -e "${YELLOW}  ./scripts/install_service.sh${NC}"
     SERVICE_INSTALLED=false
 fi
 
@@ -445,7 +445,7 @@ echo ""
 
 echo -e "${BLUE}Useful Commands:${NC}"
 echo -e "  Test manually:      ${YELLOW}python3 $SCRIPT_DIR/main.py${NC}"
-echo -e "  Check USB Gadget:   ${YELLOW}bash $SCRIPT_DIR/check_usb_gadget.sh${NC}"
+echo -e "  Check USB Gadget:   ${YELLOW}bash $SCRIPT_DIR/scripts/check_usb_gadget.sh${NC}"
 echo -e "  Update ChitUI:      ${YELLOW}git pull${NC}"
 echo ""
 
