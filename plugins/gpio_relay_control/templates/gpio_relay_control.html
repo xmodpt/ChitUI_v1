@@ -66,10 +66,10 @@
 
     // Plugin state
     const relayConfig = {
-        relay1: { name: 'Relay 1', icon: 'fa-bolt', type: 'NO', state: false, enabled: true },
-        relay2: { name: 'Relay 2', icon: 'fa-power-off', type: 'NO', state: false, enabled: true },
-        relay3: { name: 'Relay 3', icon: 'fa-fan', type: 'NO', state: false, enabled: true },
-        relay4: { name: 'Relay 4', icon: 'fa-lightbulb', type: 'NO', state: false, enabled: true },
+        relay1: { name: 'Relay 1', icon: 'fa-bolt', type: 'NO', state: false, enabled: true, show_label: true },
+        relay2: { name: 'Relay 2', icon: 'fa-power-off', type: 'NO', state: false, enabled: true, show_label: true },
+        relay3: { name: 'Relay 3', icon: 'fa-fan', type: 'NO', state: false, enabled: true, show_label: true },
+        relay4: { name: 'Relay 4', icon: 'fa-lightbulb', type: 'NO', state: false, enabled: true, show_label: true },
         show_text: true
     };
 
@@ -150,6 +150,7 @@
             relayConfig[`relay${i}`].icon = config[`relay${i}_icon`] || 'fa-bolt';
             relayConfig[`relay${i}`].type = config[`relay${i}_type`] || 'NO';
             relayConfig[`relay${i}`].enabled = config[`relay${i}_enabled`] !== false;
+            relayConfig[`relay${i}`].show_label = config[`relay${i}_show_label`] !== false;
         }
         relayConfig.show_text = config.show_text !== false;
 
@@ -181,7 +182,8 @@
             const textSpan = btn.querySelector('.relay-text');
             if (textSpan) {
                 textSpan.textContent = config.name;
-                if (relayConfig.show_text) {
+                // Use per-relay show_label setting, with fallback to global show_text
+                if (config.show_label && relayConfig.show_text) {
                     textSpan.classList.remove('hidden');
                 } else {
                     textSpan.classList.add('hidden');

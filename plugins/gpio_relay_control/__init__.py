@@ -53,7 +53,11 @@ class Plugin(ChitUIPlugin):
             'relay2_enabled': True,
             'relay3_enabled': True,
             'relay4_enabled': True,
-            'show_text': True  # Show text labels on buttons
+            'relay1_show_label': True,  # Show/hide relay label
+            'relay2_show_label': True,
+            'relay3_show_label': True,
+            'relay4_show_label': True,
+            'show_text': True  # Global show text labels on buttons (deprecated, use per-relay settings)
         }
 
         # Load saved configuration
@@ -308,6 +312,12 @@ class Plugin(ChitUIPlugin):
                 enabled_key = f'relay{i}_enabled'
                 if enabled_key in data:
                     self.config[enabled_key] = bool(data[enabled_key])
+
+            # Update relay label visibility if provided
+            for i in [1, 2, 3, 4]:
+                show_label_key = f'relay{i}_show_label'
+                if show_label_key in data:
+                    self.config[show_label_key] = bool(data[show_label_key])
 
             # Update show_text if provided
             if 'show_text' in data:
