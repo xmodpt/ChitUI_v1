@@ -1,0 +1,141 @@
+2025-11-13 17:49:41.553 | INFO     | __main__:<module>:68 - ✓ USB gadget found and writable at /mnt/usb_share
+2025-11-13 17:49:41.554 | INFO     | __main__:<module>:99 - Data folder: /root/.chitui
+2025-11-13 17:49:41.554 | INFO     | __main__:<module>:100 - Upload folder: /mnt/usb_share
+2025-11-13 17:49:41.554 | INFO     | __main__:<module>:101 - Settings file: /root/.chitui/chitui_settings.json
+2025-11-13 17:49:41.628 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+2025-11-13 17:49:41.629 | INFO     | __main__:main:1486 - Loading plugins...
+2025-11-13 17:49:41.631 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: gpio_relay_control
+GPIO relay pins initialized successfully
+2025-11-13 17:49:41.639 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for gpio_relay_control...
+GPIO Relay Control plugin started
+2025-11-13 17:49:41.669 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: gpio_relay_control v1.0.0
+2025-11-13 17:49:41.670 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: plugin_template
+2025-11-13 17:49:41.672 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for plugin_template...
+Plugin Template plugin started!
+2025-11-13 17:49:41.676 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: plugin_template v1.0.0
+2025-11-13 17:49:41.677 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: terminal
+2025-11-13 17:49:41.679 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for terminal...
+2025-11-13 17:49:41.688 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: terminal v1.0.0
+2025-11-13 17:49:41.688 | INFO     | plugins.manager:load_all_plugins:184 - Plugin toolbar_demo is disabled, skipping
+2025-11-13 17:49:41.689 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+2025-11-13 17:49:41.689 | INFO     | __main__:load_saved_printers:1474 - Loaded saved printer: saturn (192.168.1.97)
+2025-11-13 17:49:41.690 | INFO     | __main__:connect_printers:1404 - Connecting to: saturn
+2025-11-13 17:49:41.693 | INFO     | __main__:<module>:1504 - ============================================================
+2025-11-13 17:49:41.693 | INFO     | __main__:<module>:1505 - ChitUI Starting
+2025-11-13 17:49:41.694 | INFO     | __main__:<module>:1506 - ============================================================
+2025-11-13 17:49:41.694 | INFO     | __main__:<module>:1507 - Python Environment:
+2025-11-13 17:49:41.694 | INFO     | __main__:<module>:1508 -   → Python executable: /usr/bin/python3
+2025-11-13 17:49:41.695 | INFO     | __main__:<module>:1509 -   → Python version: 3.11.2
+2025-11-13 17:49:41.695 | INFO     | __main__:<module>:1510 -   → Running as user: root
+2025-11-13 17:49:41.695 | INFO     | __main__:<module>:1512 -   → Original user (sudo): root
+2025-11-13 17:49:41.696 | WARNING  | __main__:<module>:1513 -   ⚠ Running with sudo - pip operations will affect root's Python environment
+2025-11-13 17:49:41.696 | INFO     | __main__:<module>:1514 - Features:
+2025-11-13 17:49:41.696 | INFO     | __main__:<module>:1515 -   ✓ Printer Management
+2025-11-13 17:49:41.696 | INFO     | __main__:<module>:1517 -   ✓ File Upload (USB Gadget Mode)
+2025-11-13 17:49:41.697 | INFO     | __main__:<module>:1518 -      → Files saved to: /mnt/usb_share
+2025-11-13 17:49:41.697 | INFO     | __main__:<module>:1519 -      → Connect USB to printer to access files
+2025-11-13 17:49:41.697 | INFO     | __main__:<module>:1524 -   ✓ Camera Streaming (RTSP)
+2025-11-13 17:49:41.698 | INFO     | __main__:<module>:1527 - ============================================================
+2025-11-13 17:49:41.698 | INFO     | __main__:<module>:1528 - Data folder: /root/.chitui
+2025-11-13 17:49:41.698 | INFO     | __main__:<module>:1529 - Settings file: /root/.chitui/chitui_settings.json
+2025-11-13 17:49:41.699 | INFO     | __main__:<module>:1530 - ============================================================
+Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+ * Serving Flask app 'main'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.1.69:8080
+Press CTRL+C to quit
+2025-11-13 17:49:41.742 | INFO     | __main__:ws_connected_handler:1421 - Connected to: saturn
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET / HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET / HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET /js/color-modes.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET /css/bootstrap.min.css HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET /css/chitui.css HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:16] "GET /css/bootstrap-icons.min.css HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/socket.io.min.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/bootstrap.bundle.min.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/jquery-3.7.1.min.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/sdcp.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/chitui.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/settings.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/plugins.js HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /camera/video HTTP/1.1" 404 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/bootstrap.bundle.min.js.map HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /socket.io/?EIO=4&transport=polling&t=Pf-MuBx HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /js/socket.io.min.js.map HTTP/1.1" 404 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /assets/favicon-48x48.png HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /plugins/ui HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /plugins HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /css/bootstrap.min.css.map HTTP/1.1" 200 -
+2025-11-13 17:55:17.686 | INFO     | __main__:sio_handle_connect:1217 - Client connected
+2025-11-13 17:55:17.687 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /settings HTTP/1.1" 200 -
+2025-11-13 17:55:17.687 | INFO     | __main__:sio_handle_connect:1218 - Available printers: ['944047506c1e0100']
+192.168.1.66 - - [13/Nov/2025 17:55:17] "POST /socket.io/?EIO=4&transport=polling&t=Pf-MuGz&sid=3l5iFCaYYa6jgidLAAAA HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /socket.io/?EIO=4&transport=polling&t=Pf-MuH6&sid=3l5iFCaYYa6jgidLAAAA HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:17] "GET /css/fonts/bootstrap-icons.woff2?dd67030699838ea613ee6dbda90effa6 HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /plugin/gpio_relay_control/status HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /plugin/gpio_relay_control/config HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /plugin/terminal/messages HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /socket.io/?EIO=4&transport=polling&t=Pf-MuNt&sid=3l5iFCaYYa6jgidLAAAA HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /assets/favicon.ico HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /img/elegoo_saturn4ultra.webp HTTP/1.1" 200 -
+192.168.1.66 - - [13/Nov/2025 17:55:18] "GET /assets/favicon.svg HTTP/1.1" 200 -
+2025-11-13 17:55:22.684 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+192.168.1.66 - - [13/Nov/2025 17:55:22] "GET /settings HTTP/1.1" 200 -
+2025-11-13 17:55:27.342 | WARNING  | __main__:restart_application:590 - Application restart requested by user
+192.168.1.66 - - [13/Nov/2025 17:55:27] "POST /maintenance/restart HTTP/1.1" 200 -
+2025-11-13 17:55:28.357 | INFO     | __main__:do_restart:612 - Restart helper launched, shutting down...
+2025-11-13 17:55:29.358 | INFO     | __main__:do_restart:620 - Terminating current instance...
+2025-11-13 17:55:46.459 | INFO     | __main__:<module>:68 - ✓ USB gadget found and writable at /mnt/usb_share
+2025-11-13 17:55:46.460 | INFO     | __main__:<module>:99 - Data folder: /root/.chitui
+2025-11-13 17:55:46.461 | INFO     | __main__:<module>:100 - Upload folder: /mnt/usb_share
+2025-11-13 17:55:46.461 | INFO     | __main__:<module>:101 - Settings file: /root/.chitui/chitui_settings.json
+2025-11-13 17:55:46.535 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+2025-11-13 17:55:46.536 | INFO     | __main__:main:1468 - Loading plugins...
+2025-11-13 17:55:46.538 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: gpio_relay_control
+GPIO relay pins initialized successfully
+2025-11-13 17:55:46.585 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for gpio_relay_control...
+GPIO Relay Control plugin started
+2025-11-13 17:55:46.613 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: gpio_relay_control v1.0.0
+2025-11-13 17:55:46.614 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: plugin_template
+2025-11-13 17:55:46.616 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for plugin_template...
+Plugin Template plugin started!
+2025-11-13 17:55:46.621 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: plugin_template v1.0.0
+2025-11-13 17:55:46.621 | INFO     | plugins.manager:load_all_plugins:181 - Loading plugin: terminal
+2025-11-13 17:55:46.623 | INFO     | plugins.manager:load_plugin:149 - Installing dependencies for terminal...
+2025-11-13 17:55:46.632 | INFO     | plugins.manager:load_plugin:165 - Plugin loaded: terminal v1.0.0
+2025-11-13 17:55:46.632 | INFO     | plugins.manager:load_all_plugins:184 - Plugin toolbar_demo is disabled, skipping
+2025-11-13 17:55:46.633 | INFO     | __main__:load_settings:469 - Loaded settings: 1 printers configured
+2025-11-13 17:55:46.633 | INFO     | __main__:load_saved_printers:1456 - Loaded saved printer: saturn (192.168.1.97)
+2025-11-13 17:55:46.634 | INFO     | __main__:connect_printers:1386 - Connecting to: saturn
+2025-11-13 17:55:46.637 | INFO     | __main__:<module>:1486 - ============================================================
+2025-11-13 17:55:46.637 | INFO     | __main__:<module>:1487 - ChitUI Starting
+2025-11-13 17:55:46.638 | INFO     | __main__:<module>:1488 - ============================================================
+2025-11-13 17:55:46.638 | INFO     | __main__:<module>:1489 - Python Environment:
+2025-11-13 17:55:46.639 | INFO     | __main__:<module>:1490 -   → Python executable: /usr/bin/python3
+2025-11-13 17:55:46.639 | INFO     | __main__:<module>:1491 -   → Python version: 3.11.2
+2025-11-13 17:55:46.639 | INFO     | __main__:<module>:1492 -   → Running as user: root
+2025-11-13 17:55:46.640 | INFO     | __main__:<module>:1494 -   → Original user (sudo): root
+2025-11-13 17:55:46.640 | WARNING  | __main__:<module>:1495 -   ⚠ Running with sudo - pip operations will affect root's Python environment
+2025-11-13 17:55:46.640 | INFO     | __main__:<module>:1496 - Features:
+2025-11-13 17:55:46.640 | INFO     | __main__:<module>:1497 -   ✓ Printer Management
+2025-11-13 17:55:46.641 | INFO     | __main__:<module>:1499 -   ✓ File Upload (USB Gadget Mode)
+2025-11-13 17:55:46.641 | INFO     | __main__:<module>:1500 -      → Files saved to: /mnt/usb_share
+2025-11-13 17:55:46.641 | INFO     | __main__:<module>:1501 -      → Connect USB to printer to access files
+2025-11-13 17:55:46.642 | INFO     | __main__:<module>:1506 -   ✓ Camera Streaming (RTSP)
+2025-11-13 17:55:46.642 | INFO     | __main__:<module>:1509 - ============================================================
+2025-11-13 17:55:46.642 | INFO     | __main__:<module>:1510 - Data folder: /root/.chitui
+2025-11-13 17:55:46.642 | INFO     | __main__:<module>:1511 - Settings file: /root/.chitui/chitui_settings.json
+2025-11-13 17:55:46.643 | INFO     | __main__:<module>:1512 - ============================================================
+Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+ * Serving Flask app 'main'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://192.168.1.69:8080
+Press CTRL+C to quit
+2025-11-13 17:55:46.745 | INFO     | __main__:ws_connected_handler:1403 - Connected to: saturn
