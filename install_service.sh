@@ -144,7 +144,8 @@ echo -e "${GREEN}✓${NC} Service enabled (will start on boot)"
 
 # Ask if user wants to start the service now
 echo ""
-read -p "$(echo -e ${BLUE}Start the service now? [Y/n]${NC} )" -n 1 -r
+echo -ne "${BLUE}Start the service now? [Y/n]${NC} "
+read -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     # Stop any existing instance
