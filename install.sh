@@ -276,22 +276,50 @@ fi
 
 echo ""
 
-# Configure passwordless sudo for USB gadget reload (if USB gadget was installed)
+# Configure passwordless sudo and permissions for USB gadget (if USB gadget was installed)
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Configuring passwordless sudo for USB gadget reload...${NC}"
+    echo -e "${BLUE}Configuring permissions for USB gadget...${NC}"
+    echo ""
+
+    # 1. Configure passwordless sudo for USB gadget operations
     SUDOERS_FILE="/etc/sudoers.d/chitui-usb-gadget"
 
-    # Create sudoers entry for modprobe without password
-    echo "$ACTUAL_USER ALL=(ALL) NOPASSWD: /sbin/modprobe" | sudo tee "$SUDOERS_FILE" > /dev/null
+    echo -e "${BLUE}  Setting up passwordless sudo...${NC}"
+    # Create sudoers entry for commands needed by USB gadget management
+    cat << 'SUDOEOF' | sudo tee "$SUDOERS_FILE" > /dev/null
+# ChitUI USB Gadget - Allow modprobe without password
+%sudo ALL=(ALL) NOPASSWD: /sbin/modprobe
+# Allow writing to UDC control files for USB reconnect
+%sudo ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/kernel/config/usb_gadget/*/UDC
+# Allow sync command
+%sudo ALL=(ALL) NOPASSWD: /bin/sync
+SUDOEOF
     sudo chmod 0440 "$SUDOERS_FILE"
 
     if [ -f "$SUDOERS_FILE" ]; then
-        echo -e "${GREEN}✓ Configured passwordless sudo for modprobe${NC}"
-        echo -e "${GREEN}  ChitUI can now reload USB gadget without password${NC}"
+        echo -e "${GREEN}  ✓ Configured passwordless sudo${NC}"
     else
-        echo -e "${YELLOW}⚠ Failed to configure passwordless sudo${NC}"
-        echo -e "${YELLOW}  You may need to run ChitUI with: sudo python3 main.py${NC}"
+        echo -e "${YELLOW}  ⚠ Failed to configure passwordless sudo${NC}"
     fi
+
+    # 2. Set permissions on USB gadget mount point (if it exists)
+    if [ -d "/mnt/usb_share" ]; then
+        echo -e "${BLUE}  Setting permissions on /mnt/usb_share...${NC}"
+        sudo chmod 777 /mnt/usb_share
+        echo -e "${GREEN}  ✓ USB gadget folder is writable${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ /mnt/usb_share not found yet (will be created on reboot)${NC}"
+        echo -e "${YELLOW}    After reboot, run: sudo chmod 777 /mnt/usb_share${NC}"
+    fi
+
+    # 3. Add user to necessary groups for USB/GPIO access
+    echo -e "${BLUE}  Adding user to required groups...${NC}"
+    sudo usermod -a -G gpio,dialout,plugdev "$ACTUAL_USER" 2>/dev/null || true
+    echo -e "${GREEN}  ✓ User added to access groups${NC}"
+
+    echo ""
+    echo -e "${GREEN}✓ USB gadget permissions configured${NC}"
+    echo -e "${YELLOW}  Note: You may need to log out and back in for group changes to take effect${NC}"
 fi
 
 echo ""
