@@ -18,9 +18,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="card-subtitle mb-0">Relay 1</h6>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="gpio-relay1-enabled" checked>
-                        <label class="form-check-label" for="gpio-relay1-enabled">Enabled</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay1-show-label" checked>
+                            <label class="form-check-label" for="gpio-relay1-show-label">Show Label</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay1-enabled" checked>
+                            <label class="form-check-label" for="gpio-relay1-enabled">Enabled</label>
+                        </div>
                     </div>
                 </div>
                 <div class="row g-3">
@@ -55,9 +61,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="card-subtitle mb-0">Relay 2</h6>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="gpio-relay2-enabled" checked>
-                        <label class="form-check-label" for="gpio-relay2-enabled">Enabled</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay2-show-label" checked>
+                            <label class="form-check-label" for="gpio-relay2-show-label">Show Label</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay2-enabled" checked>
+                            <label class="form-check-label" for="gpio-relay2-enabled">Enabled</label>
+                        </div>
                     </div>
                 </div>
                 <div class="row g-3">
@@ -92,9 +104,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="card-subtitle mb-0">Relay 3</h6>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="gpio-relay3-enabled" checked>
-                        <label class="form-check-label" for="gpio-relay3-enabled">Enabled</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay3-show-label" checked>
+                            <label class="form-check-label" for="gpio-relay3-show-label">Show Label</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay3-enabled" checked>
+                            <label class="form-check-label" for="gpio-relay3-enabled">Enabled</label>
+                        </div>
                     </div>
                 </div>
                 <div class="row g-3">
@@ -129,9 +147,15 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h6 class="card-subtitle mb-0">Relay 4</h6>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="gpio-relay4-enabled" checked>
-                        <label class="form-check-label" for="gpio-relay4-enabled">Enabled</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay4-show-label" checked>
+                            <label class="form-check-label" for="gpio-relay4-show-label">Show Label</label>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="gpio-relay4-enabled" checked>
+                            <label class="form-check-label" for="gpio-relay4-enabled">Enabled</label>
+                        </div>
                     </div>
                 </div>
                 <div class="row g-3">
@@ -210,12 +234,13 @@
             // Populate display settings
             document.getElementById('gpio-show-text').checked = config.show_text !== false;
 
-            // Populate relay names, types, icons, and enabled state
+            // Populate relay names, types, icons, enabled state, and label visibility
             for (let i = 1; i <= 4; i++) {
                 document.getElementById(`gpio-relay${i}-name`).value = config[`relay${i}_name`] || `Relay ${i}`;
                 document.getElementById(`gpio-relay${i}-type`).value = config[`relay${i}_type`] || 'NO';
                 document.getElementById(`gpio-relay${i}-icon`).value = config[`relay${i}_icon`] || 'fa-bolt';
                 document.getElementById(`gpio-relay${i}-enabled`).checked = config[`relay${i}_enabled`] !== false;
+                document.getElementById(`gpio-relay${i}-show-label`).checked = config[`relay${i}_show_label`] !== false;
             }
 
             // Populate GPIO pins
@@ -242,6 +267,7 @@
             newConfig[`relay${i}_icon`] = document.getElementById(`gpio-relay${i}-icon`).value;
             newConfig[`relay${i}_pin`] = parseInt(document.getElementById(`gpio-relay${i}-pin`).value);
             newConfig[`relay${i}_enabled`] = document.getElementById(`gpio-relay${i}-enabled`).checked;
+            newConfig[`relay${i}_show_label`] = document.getElementById(`gpio-relay${i}-show-label`).checked;
         }
 
         // Validate GPIO pins
