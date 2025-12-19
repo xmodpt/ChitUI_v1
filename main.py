@@ -2109,7 +2109,7 @@ def reload_usb_gadget():
         logger.info("Reloading USB gadget to notify printer...")
 
         # Use the reload script - it works when run manually so call it from Python
-        script_path = os.path.join(os.path.dirname(__file__), 'reload_usb_gadget.sh')
+        script_path = os.path.join(os.path.dirname(__file__), 'scripts', 'reload_usb_gadget.sh')
         if os.path.exists(script_path):
             logger.info(f"Running reload script: {script_path}")
             result = subprocess.run(['sudo', 'bash', script_path],
