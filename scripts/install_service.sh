@@ -26,7 +26,8 @@ fi
 # Get the actual user (not root if using sudo)
 ACTUAL_USER="${SUDO_USER:-$USER}"
 ACTUAL_HOME=$(eval echo ~$ACTUAL_USER)
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Get project root (parent directory of scripts/)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 echo -e "${BLUE}Configuration:${NC}"
 echo -e "  User:           ${GREEN}$ACTUAL_USER${NC}"
