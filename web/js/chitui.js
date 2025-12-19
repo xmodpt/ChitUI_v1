@@ -319,7 +319,7 @@ function handle_printer_attributes(data) {
 function updateStorageDisplay(remainingBytes) {
   // RemainingMemory is in bytes, convert to GB
   const remainingGB = remainingBytes / (1024 * 1024 * 1024);
-  
+
   // Try to determine total storage from remaining
   // Most printers have 16GB or 32GB internal storage
   let totalGB = 32;
@@ -328,10 +328,10 @@ function updateStorageDisplay(remainingBytes) {
   } else if (remainingGB < 16) {
     totalGB = 16;
   }
-  
+
   const usedGB = totalGB - remainingGB;
   const usedPercent = (usedGB / totalGB * 100).toFixed(1);
-  
+
   // Format sizes nicely
   function formatSize(gb) {
     if (gb < 1) {
@@ -339,19 +339,38 @@ function updateStorageDisplay(remainingBytes) {
     }
     return gb.toFixed(2) + ' GB';
   }
-  
-  // Update simple display (main page)
+
+  // Update circular gauge (file manager)
+  const $gaugeCircle = $('#storageGaugeCircle');
+  const $gaugePercent = $('#storageGaugePercent');
+  const circumference = 2 * Math.PI * 80; // 2 * PI * radius (80)
+  const offset = circumference - (usedPercent / 100 * circumference);
+
+  $gaugeCircle.css('stroke-dashoffset', offset);
+  $gaugePercent.text(Math.round(usedPercent) + '%');
+
+  // Color code the circular gauge
+  $gaugeCircle.removeClass('warning danger');
+  if (usedPercent < 70) {
+    // Green (default)
+  } else if (usedPercent < 90) {
+    $gaugeCircle.addClass('warning');
+  } else {
+    $gaugeCircle.addClass('danger');
+  }
+
+  // Update simple display text
   $('#storageUsedSimple').text(formatSize(usedGB));
   $('#storageFreeSimple').text(formatSize(remainingGB));
   $('#storageInfo').show();
-  
+
   // Update detailed display (settings modal)
   $('#storageUsed').text(formatSize(usedGB));
   $('#storageTotal').text(formatSize(totalGB));
   $('#storageFree').text(formatSize(remainingGB));
   $('#storagePercent').text(usedPercent + '%');
   $('#storageProgressBar').css('width', usedPercent + '%').attr('aria-valuenow', usedPercent);
-  
+
   // Color code the progress bar
   const $progressBar = $('#storageProgressBar');
   $progressBar.removeClass('bg-success bg-warning bg-danger');
