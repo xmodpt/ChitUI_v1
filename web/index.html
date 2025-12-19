@@ -188,6 +188,14 @@
                   <i class="bi bi-arrow-clockwise"></i>
                   Refresh
                 </button>
+                <div class="btn-group" role="group" aria-label="View toggle">
+                  <button type="button" class="btn btn-sm btn-outline-secondary active" id="btnListView" title="List View">
+                    <i class="bi bi-list-ul"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary" id="btnGridView" title="Grid View">
+                    <i class="bi bi-grid-3x3-gap"></i>
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -267,7 +275,8 @@
                 </div>
               </div>
 
-              <div class="table-responsive">
+              <!-- List View -->
+              <div class="table-responsive" id="fileManagerList">
                 <table class="table table-hover" id="fileManagerTable">
                   <thead>
                     <tr>
@@ -285,6 +294,16 @@
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              <!-- Grid View -->
+              <div id="fileManagerGrid" class="d-none">
+                <div class="row g-3" id="fileManagerGridContainer">
+                  <div class="col-12 text-center text-muted py-5">
+                    <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>
+                    No files found. Upload a file to get started.
+                  </div>
+                </div>
               </div>
             </div>
           </div>

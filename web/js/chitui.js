@@ -2239,3 +2239,144 @@ window.addEventListener('resize', () => {
     new bootstrap.Tooltip(tooltipTriggerEl)
   })
 })()
+
+// ===== FILE MANAGER GRID VIEW =====
+
+let fileManagerView = 'list'; // 'list' or 'grid'
+
+// View toggle buttons
+const btnListView = document.getElementById('btnListView');
+const btnGridView = document.getElementById('btnGridView');
+const fileManagerList = document.getElementById('fileManagerList');
+const fileManagerGrid = document.getElementById('fileManagerGrid');
+
+if (btnListView && btnGridView) {
+  btnListView.addEventListener('click', () => {
+    fileManagerView = 'list';
+    btnListView.classList.add('active');
+    btnGridView.classList.remove('active');
+    fileManagerList.classList.remove('d-none');
+    fileManagerGrid.classList.add('d-none');
+    localStorage.setItem('fileManagerView', 'list');
+  });
+
+  btnGridView.addEventListener('click', () => {
+    fileManagerView = 'grid';
+    btnGridView.classList.add('active');
+    btnListView.classList.remove('active');
+    fileManagerGrid.classList.remove('d-none');
+    fileManagerList.classList.add('d-none');
+    localStorage.setItem('fileManagerView', 'grid');
+    // Trigger grid sync if files are already loaded
+    syncFilesToGrid();
+  });
+
+  // Restore saved view preference
+  const savedView = localStorage.getItem('fileManagerView');
+  if (savedView === 'grid') {
+    btnGridView.click();
+  }
+}
+
+function syncFilesToGrid() {
+  const fileManagerBody = document.getElementById('fileManagerBody');
+  const gridContainer = document.getElementById('fileManagerGridContainer');
+
+  if (!fileManagerBody || !gridContainer) {
+    console.warn('Grid sync: Missing elements');
+    return;
+  }
+
+  const rows = fileManagerBody.querySelectorAll('tr');
+  console.log('Syncing ' + rows.length + ' files to grid view');
+
+  gridContainer.innerHTML = '';
+
+  if (rows.length === 0 || (rows.length === 1 && rows[0].cells.length === 1)) {
+    gridContainer.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>No files found. Upload a file to get started.</div>';
+    return;
+  }
+
+  rows.forEach((row, index) => {
+    const cells = row.querySelectorAll('td');
+
+    if (cells.length >= 2) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = cells[1].innerHTML;
+      const filename = tempDiv.childNodes[0]?.textContent || '';
+      const dataFile = row.getAttribute('data-file');
+
+      if (!filename) return;
+
+      const gridItem = document.createElement('div');
+      gridItem.className = 'col-lg-2 col-md-3 col-sm-4 col-6';
+
+      const isGooFile = filename.toLowerCase().endsWith('.goo');
+      const thumbnailUrl = isGooFile ? '/file-thumbnail/' + encodeURIComponent(filename) : '';
+
+      const gridItemDiv = document.createElement('div');
+      gridItemDiv.className = 'file-grid-item';
+      gridItemDiv.setAttribute('data-file', dataFile || filename);
+
+      const thumbnail = document.createElement('div');
+      thumbnail.className = 'file-grid-thumbnail';
+
+      if (thumbnailUrl) {
+        const spinner = document.createElement('div');
+        spinner.className = 'loading-spinner spinner-border spinner-border-sm text-secondary';
+        spinner.setAttribute('role', 'status');
+        spinner.innerHTML = '<span class="visually-hidden">Loading...</span>';
+
+        const img = document.createElement('img');
+        img.src = thumbnailUrl;
+        img.alt = filename;
+        img.className = 'd-none';
+
+        img.addEventListener('load', () => {
+          spinner.classList.add('d-none');
+          img.classList.remove('d-none');
+        });
+
+        img.addEventListener('error', () => {
+          spinner.classList.add('d-none');
+          thumbnail.innerHTML = '<i class="bi bi-file-earmark placeholder-icon"></i>';
+        });
+
+        thumbnail.appendChild(spinner);
+        thumbnail.appendChild(img);
+      } else {
+        thumbnail.innerHTML = '<i class="bi bi-file-earmark placeholder-icon"></i>';
+      }
+
+      const name = document.createElement('div');
+      name.className = 'file-grid-name';
+      name.title = filename;
+      name.textContent = filename;
+
+      const actions = document.createElement('div');
+      actions.className = 'file-grid-actions';
+      actions.innerHTML = tempDiv.innerHTML;
+
+      gridItemDiv.appendChild(thumbnail);
+      gridItemDiv.appendChild(name);
+      gridItemDiv.appendChild(actions);
+      gridItem.appendChild(gridItemDiv);
+      gridContainer.appendChild(gridItem);
+    }
+  });
+
+  console.log('Grid view updated with ' + gridContainer.children.length + ' files');
+}
+
+// Enhance the existing syncTableToFileManager to also sync to grid
+const originalSyncFunc = window.syncTableToFileManager;
+if (originalSyncFunc) {
+  window.syncTableToFileManager = function(sourceTbody) {
+    originalSyncFunc(sourceTbody);
+    if (fileManagerView === 'grid') {
+      syncFilesToGrid();
+    }
+  };
+}
+
+console.log('Grid view functionality loaded');
