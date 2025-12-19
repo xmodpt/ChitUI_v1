@@ -105,7 +105,7 @@ Type=simple
 User=$ACTUAL_USER
 Group=$ACTUAL_USER
 WorkingDirectory=$SCRIPT_DIR
-ExecStart=gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app
+ExecStart=/bin/bash -c 'PATH="\$HOME/.local/bin:/usr/local/bin:\$PATH" exec gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app'
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:$ACTUAL_HOME/.chitui/service.log
