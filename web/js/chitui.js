@@ -408,6 +408,64 @@ function updateStorageDisplay(remainingBytes) {
   }
 }
 
+function updateUsbGadgetStorage() {
+  fetch('/usb-gadget/storage')
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.available) {
+        // Show the gauge
+        $('#usbGaugeWrapper').show();
+
+        // Format size function
+        function formatSize(bytes) {
+          const mb = bytes / (1024 * 1024);
+          const gb = bytes / (1024 * 1024 * 1024);
+          if (gb >= 1) {
+            return gb.toFixed(2) + ' GB';
+          }
+          return mb.toFixed(0) + ' MB';
+        }
+
+        // Update gauge
+        const usedPercent = data.percent;
+        const $gaugeCircle = $('#usbGaugeCircle');
+        const $gaugePercent = $('#usbGaugePercent');
+        const circumference = 2 * Math.PI * 80; // 2 * PI * radius (80)
+        const offset = circumference - (usedPercent / 100 * circumference);
+
+        $gaugeCircle.css('stroke-dashoffset', offset);
+        $gaugePercent.text(Math.round(usedPercent) + '%');
+
+        // Color code the USB gauge
+        $gaugeCircle.removeClass('warning danger');
+        if (usedPercent < 70) {
+          // Green (default)
+        } else if (usedPercent < 90) {
+          $gaugeCircle.addClass('warning');
+        } else {
+          $gaugeCircle.addClass('danger');
+        }
+
+        // Update details text
+        $('#usbGaugeDetails').text(formatSize(data.used) + ' / ' + formatSize(data.total));
+      } else {
+        // Hide the gauge if USB gadget is not available
+        $('#usbGaugeWrapper').hide();
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching USB gadget storage:', error);
+      $('#usbGaugeWrapper').hide();
+    });
+}
+
+// Update USB gadget storage every 5 seconds
+setInterval(updateUsbGadgetStorage, 5000);
+// Also update immediately on page load
+$(document).ready(function() {
+  updateUsbGadgetStorage();
+});
+
 
 function handle_task_details(data) {
   console.log('=== Task details received ===');

@@ -279,17 +279,34 @@
               </div>
               
               <div class="file-manager-toolbar mb-3">
-                <div class="row g-2">
-                  <div class="col-md-8">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-6">
                     <div class="input-group">
                       <span class="input-group-text"><i class="bi bi-search"></i></span>
                       <input type="text" class="form-control" placeholder="Search files..." id="fileSearchInput">
                     </div>
                   </div>
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <button type="button" class="btn btn-primary w-100" id="btnRefreshPI">
                       <i class="bi bi-arrow-clockwise me-1"></i>Refresh PI USB
                     </button>
+                  </div>
+                  <div class="col-md-3">
+                    <div class="usb-gauge-wrapper" id="usbGaugeWrapper" style="display: none;">
+                      <div class="circular-gauge">
+                        <svg class="gauge-svg" viewBox="0 0 200 200">
+                          <circle class="gauge-bg" cx="100" cy="100" r="80" fill="none" stroke-width="20"/>
+                          <circle class="gauge-progress" id="usbGaugeCircle" cx="100" cy="100" r="80" fill="none" stroke-width="20" stroke-linecap="round"/>
+                        </svg>
+                        <div class="gauge-content">
+                          <div class="gauge-percentage" id="usbGaugePercent">0%</div>
+                          <div class="gauge-label">PI USB</div>
+                        </div>
+                      </div>
+                      <div class="text-center mt-1">
+                        <small class="text-muted" id="usbGaugeDetails">-- / --</small>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

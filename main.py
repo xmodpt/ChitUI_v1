@@ -1715,6 +1715,48 @@ def upload_file():
         return Response("u r doin it rong", status=405, mimetype='text/plain')
 
 
+@app.route('/usb-gadget/storage', methods=['GET'])
+def get_usb_gadget_storage():
+    """Get USB gadget storage information"""
+    try:
+        import shutil
+
+        # Check if USB gadget is available
+        if not os.path.exists('/mnt/usb_share'):
+            return jsonify({
+                "success": False,
+                "available": False,
+                "message": "USB gadget mount point not found"
+            })
+
+        # Get disk usage for /mnt/usb_share
+        stat = shutil.disk_usage('/mnt/usb_share')
+
+        # Also try to get the size of /piusb.bin for total capacity
+        total_bytes = stat.total
+        if os.path.exists('/piusb.bin'):
+            bin_size = os.path.getsize('/piusb.bin')
+            # Use bin file size if it's larger (more accurate)
+            if bin_size > total_bytes:
+                total_bytes = bin_size
+
+        return jsonify({
+            "success": True,
+            "available": True,
+            "total": total_bytes,
+            "used": stat.used,
+            "free": stat.free,
+            "percent": round((stat.used / total_bytes * 100), 1) if total_bytes > 0 else 0
+        })
+    except Exception as e:
+        logger.error(f"Error getting USB gadget storage info: {e}")
+        return jsonify({
+            "success": False,
+            "available": False,
+            "message": str(e)
+        }), 500
+
+
 @app.route('/usb-gadget/refresh', methods=['POST'])
 def refresh_usb_gadget_endpoint():
     """Manually trigger USB gadget refresh to notify printer of file changes"""
