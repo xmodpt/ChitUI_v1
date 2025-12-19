@@ -247,14 +247,6 @@ body {
   text-align: left;
 }
 
-.printer-preview-gauge {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 1rem;
-}
-
 .printer-preview h3 {
   font-size: 1.5rem;
   font-weight: 600;
@@ -275,11 +267,6 @@ body {
 
   .printer-preview-right {
     text-align: center;
-  }
-
-  .printer-preview-gauge {
-    margin-top: 1rem;
-    padding: 0;
   }
 }
 
@@ -979,13 +966,6 @@ body {
   letter-spacing: 0.05em;
   font-weight: 600;
   margin-top: 0.25rem;
-}
-
-.gauge-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.25rem;
 }
 
 .storage-details {
