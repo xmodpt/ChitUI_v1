@@ -100,8 +100,14 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
 
 # ===== WebSocket and Real-time Communication Setup =====
 # SocketIO for real-time bidirectional communication with web clients
-# async_mode='threading' allows concurrent handling of multiple connections
-socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
+# async_mode='eventlet' for production with Gunicorn, 'threading' for development
+# Auto-detect based on whether eventlet is available
+try:
+    import eventlet
+    async_mode = 'eventlet'
+except ImportError:
+    async_mode = 'threading'
+socketio = SocketIO(app, async_mode=async_mode, cors_allowed_origins="*")
 
 # Global state management
 websockets = {}  # Dictionary to store active WebSocket connections to printers {printer_id: ws_connection}
