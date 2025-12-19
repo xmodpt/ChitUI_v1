@@ -344,6 +344,9 @@
                   <button class="nav-link" data-bs-toggle="pill" data-bs-target="#maintenance-pane" type="button" role="tab">
                     <i class="bi bi-tools me-2"></i> Maintenance
                   </button>
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#about-pane" type="button" role="tab">
+                    <i class="bi bi-info-circle me-2"></i> About
+                  </button>
                 </div>
               </div>
 
@@ -674,6 +677,94 @@
                 <div class="alert alert-warning" role="alert">
                   <i class="bi bi-exclamation-triangle me-2"></i>
                   <strong>Note:</strong> Both operations will temporarily interrupt your connection to the system.
+                </div>
+              </div>
+
+              <!-- About Tab -->
+              <div class="tab-pane fade" id="about-pane">
+                <div class="text-center mb-4">
+                  <div class="mb-3">
+                    <i class="bi bi-box-seam" style="font-size: 4rem; color: var(--accent-color);"></i>
+                  </div>
+                  <h3 class="mb-3">ChitUI Plus</h3>
+                  <p class="lead text-muted">Web Interface for Chitu 3D Printer Control</p>
+                  <p class="text-muted">Version 2.0</p>
+                </div>
+
+                <div class="card bg-dark border-secondary mb-3">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">
+                      <i class="bi bi-info-circle me-2"></i>About This Project
+                    </h6>
+                    <p class="text-muted mb-3">
+                      ChitUI Plus is an enhanced web-based interface for controlling Chitu-based 3D printers.
+                      It provides real-time monitoring, file management via USB gadget mode, and extensible plugin support
+                      for additional functionality like GPIO relay control, IP camera streaming, and system monitoring.
+                    </p>
+                    <p class="text-muted mb-0">
+                      <strong>Features:</strong>
+                    </p>
+                    <ul class="text-muted">
+                      <li>Automatic printer discovery via UDP broadcast</li>
+                      <li>Real-time printer status monitoring via WebSocket</li>
+                      <li>File upload/management (USB Gadget & Network modes)</li>
+                      <li>Print control (start, pause, resume, stop)</li>
+                      <li>Temperature monitoring and control</li>
+                      <li>Plugin system for extensibility</li>
+                      <li>User authentication and settings management</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="card bg-dark border-secondary mb-3">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">
+                      <i class="bi bi-person-badge me-2"></i>Credits
+                    </h6>
+                    <p class="text-muted mb-2">
+                      <strong>Original Proof of Concept:</strong>
+                    </p>
+                    <p class="text-muted mb-3">
+                      This project is based on the original ChitUI proof of concept created by
+                      <strong>Jan Grewe</strong>.
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <a href="https://github.com/jangrewe/ChitUI" target="_blank" class="btn btn-sm btn-outline-primary btn-icon">
+                        <i class="bi bi-github me-1"></i> Original ChitUI Repository
+                      </a>
+                      <a href="https://www.jangrewe.com/" target="_blank" class="btn btn-sm btn-outline-primary btn-icon">
+                        <i class="bi bi-globe me-1"></i> jangrewe.com
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card bg-dark border-secondary">
+                  <div class="card-body">
+                    <h6 class="card-title mb-3">
+                      <i class="bi bi-code-slash me-2"></i>Technology Stack
+                    </h6>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <p class="text-muted mb-1"><strong>Backend:</strong></p>
+                        <ul class="text-muted small mb-0">
+                          <li>Python 3.11</li>
+                          <li>Flask Web Framework</li>
+                          <li>Flask-SocketIO (WebSocket)</li>
+                          <li>Loguru (Logging)</li>
+                        </ul>
+                      </div>
+                      <div class="col-md-6">
+                        <p class="text-muted mb-1"><strong>Frontend:</strong></p>
+                        <ul class="text-muted small mb-0">
+                          <li>Bootstrap 5</li>
+                          <li>Socket.IO Client</li>
+                          <li>Bootstrap Icons</li>
+                          <li>Vanilla JavaScript</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

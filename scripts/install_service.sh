@@ -63,8 +63,6 @@ python3 -c "import flask_socketio" 2>/dev/null || MISSING_DEPS+=("flask-socketio
 python3 -c "import loguru" 2>/dev/null || MISSING_DEPS+=("loguru")
 python3 -c "import websocket" 2>/dev/null || MISSING_DEPS+=("websocket-client")
 python3 -c "import requests" 2>/dev/null || MISSING_DEPS+=("requests")
-python3 -c "import gunicorn" 2>/dev/null || MISSING_DEPS+=("gunicorn")
-python3 -c "import eventlet" 2>/dev/null || MISSING_DEPS+=("eventlet")
 
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     echo -e "${YELLOW}⚠ Missing dependencies: ${MISSING_DEPS[*]}${NC}"
@@ -105,7 +103,7 @@ Type=simple
 User=$ACTUAL_USER
 Group=$ACTUAL_USER
 WorkingDirectory=$SCRIPT_DIR
-ExecStart=gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app
+ExecStart=/usr/bin/python3 main.py
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:$ACTUAL_HOME/.chitui/service.log

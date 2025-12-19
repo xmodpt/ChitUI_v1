@@ -23,20 +23,10 @@ check_port() {
 }
 
 while true; do
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting ChitUI with Gunicorn..."
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting ChitUI..."
 
-    # Ensure ~/.local/bin is in PATH for user-installed packages
-    export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-
-    # Run with Gunicorn (production WSGI server) and capture exit code
-    # Using eventlet worker for WebSocket support
-    gunicorn --bind 0.0.0.0:8080 \
-             --worker-class eventlet \
-             --workers 1 \
-             --timeout 120 \
-             --access-logfile - \
-             --error-logfile - \
-             main:app
+    # Run with Python Flask development server and capture exit code
+    python3 main.py
     EXIT_CODE=$?
 
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ChitUI exited with code: $EXIT_CODE"
