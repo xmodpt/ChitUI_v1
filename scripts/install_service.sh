@@ -104,7 +104,7 @@ Type=simple
 User=$ACTUAL_USER
 Group=$ACTUAL_USER
 WorkingDirectory=$SCRIPT_DIR
-ExecStart=/usr/local/bin/gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app
+ExecStart=gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:$ACTUAL_HOME/.chitui/service.log
@@ -115,7 +115,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 
 # Environment
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=$ACTUAL_HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 
 [Install]
