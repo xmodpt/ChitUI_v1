@@ -1,17 +1,86 @@
-const socket = io();
-var websockets = []
-var printers = {}
-var printersPreviousStatus = {}  // Track previous online status
-var currentPrinter = null
-var defaultPrinterId = null  // Default printer to auto-select
-var defaultPrinterLoaded = false  // Track if default setting is loaded
-var printersLoaded = false  // Track if printers are loaded
-var progress = null
-var printStatusModal = null
-var cameraFullscreenModal = null
-var cameraActive = false
+/**
+ * ChitUI Plus - Main Client-Side JavaScript
+ *
+ * This file handles all client-side functionality for the ChitUI web interface.
+ * It manages real-time communication with the server via Socket.IO, printer discovery,
+ * status monitoring, file management, and print job control.
+ *
+ * Architecture:
+ * - Socket.IO Client: Real-time bidirectional communication with Flask server
+ * - Event-driven: Responds to server events and user interactions
+ * - Global State: Maintains printer list, current printer, and UI state
+ *
+ * Key Features:
+ * - Auto-discovery and connection to Chitu printers
+ * - Real-time printer status updates
+ * - File upload/delete/print management
+ * - Temperature monitoring and control
+ * - Print job control (start/pause/resume/stop)
+ * - USB gadget integration for local file storage
+ * - Default printer auto-selection
+ *
+ * Dependencies:
+ * - socket.io-client: Real-time communication
+ * - Bootstrap: UI framework and modals
+ * - jQuery: DOM manipulation (legacy - consider migrating to vanilla JS)
+ *
+ * @author ChitUI Developer
+ * @version 1.0
+ */
 
-// Function to auto-select default printer when both printers and default setting are loaded
+// ========================================================================
+// SOCKET.IO AND COMMUNICATION SETUP
+// ========================================================================
+
+// Initialize Socket.IO connection to Flask server
+const socket = io();
+
+// ========================================================================
+// GLOBAL STATE MANAGEMENT
+// ========================================================================
+
+// WebSocket connections to printers (managed server-side)
+var websockets = []
+
+// Discovered printers dictionary: {printer_id: printer_info}
+var printers = {}
+
+// Track previous online status for change detection
+var printersPreviousStatus = {}
+
+// Currently selected printer ID
+var currentPrinter = null
+
+// Default printer settings for auto-selection
+var defaultPrinterId = null          // Default printer to auto-select on page load
+var defaultPrinterLoaded = false     // Track if default setting is loaded from server
+var printersLoaded = false           // Track if printer list is loaded from server
+
+// UI elements and state
+var progress = null                   // Print progress percentage
+var printStatusModal = null          // Bootstrap modal for print status
+var cameraFullscreenModal = null     // Bootstrap modal for fullscreen camera view
+var cameraActive = false             // Camera streaming state
+
+// ========================================================================
+// DEFAULT PRINTER AUTO-SELECTION
+// ========================================================================
+
+/**
+ * Auto-select default printer when both printers list and settings are loaded
+ *
+ * This function implements a coordination pattern to ensure we don't try to
+ * select the default printer before both the printer list and user settings
+ * are available. It's called from multiple places:
+ * - When printer list is received
+ * - When settings are loaded
+ *
+ * Conditions required for auto-selection:
+ * 1. No printer currently selected
+ * 2. Default printer ID is loaded from settings
+ * 3. Printer list is loaded from server
+ * 4. Default printer exists in the printer list
+ */
 function tryAutoSelectDefaultPrinter() {
   console.log('tryAutoSelectDefaultPrinter called:');
   console.log('  currentPrinter:', currentPrinter);
@@ -29,16 +98,40 @@ function tryAutoSelectDefaultPrinter() {
   }
 }
 
+// ========================================================================
+// SOCKET.IO EVENT HANDLERS
+// ========================================================================
+//
+// These handlers respond to events emitted by the Flask server.
+// They manage printer discovery, status updates, and real-time notifications.
+//
+// ========================================================================
+
+/**
+ * Socket.IO Connection Event
+ * Fired when connection to server is established
+ */
 socket.on("connect", () => {
   console.log('socket.io connected: ' + socket.id);
   setServerStatus(true)
 });
 
+/**
+ * Socket.IO Disconnection Event
+ * Fired when connection to server is lost
+ */
 socket.on("disconnect", () => {
   console.log("socket.io disconnected");
   setServerStatus(false)
 });
 
+/**
+ * Printers List Event
+ * Receives updated list of discovered printers from server
+ * Handles printer status changes and auto-reloads page if any printer goes online/offline
+ *
+ * @param {Object} data - Dictionary of printers {printer_id: printer_info}
+ */
 socket.on("printers", (data) => {
   console.log(JSON.stringify(data))
 

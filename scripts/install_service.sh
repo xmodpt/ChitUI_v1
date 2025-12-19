@@ -26,7 +26,8 @@ fi
 # Get the actual user (not root if using sudo)
 ACTUAL_USER="${SUDO_USER:-$USER}"
 ACTUAL_HOME=$(eval echo ~$ACTUAL_USER)
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# Get project root (parent directory of scripts/)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 echo -e "${BLUE}Configuration:${NC}"
 echo -e "  User:           ${GREEN}$ACTUAL_USER${NC}"
@@ -62,6 +63,8 @@ python3 -c "import flask_socketio" 2>/dev/null || MISSING_DEPS+=("flask-socketio
 python3 -c "import loguru" 2>/dev/null || MISSING_DEPS+=("loguru")
 python3 -c "import websocket" 2>/dev/null || MISSING_DEPS+=("websocket-client")
 python3 -c "import requests" 2>/dev/null || MISSING_DEPS+=("requests")
+python3 -c "import gunicorn" 2>/dev/null || MISSING_DEPS+=("gunicorn")
+python3 -c "import eventlet" 2>/dev/null || MISSING_DEPS+=("eventlet")
 
 if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
     echo -e "${YELLOW}⚠ Missing dependencies: ${MISSING_DEPS[*]}${NC}"
@@ -102,7 +105,7 @@ Type=simple
 User=$ACTUAL_USER
 Group=$ACTUAL_USER
 WorkingDirectory=$SCRIPT_DIR
-ExecStart=/usr/bin/python3 $SCRIPT_DIR/main.py
+ExecStart=gunicorn --bind 0.0.0.0:8080 --worker-class eventlet --workers 1 --timeout 120 --access-logfile - --error-logfile - main:app
 Restart=on-failure
 RestartSec=5
 StandardOutput=append:$ACTUAL_HOME/.chitui/service.log
@@ -113,7 +116,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 
 # Environment
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=$ACTUAL_HOME/.local/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 
 [Install]
@@ -144,7 +147,8 @@ echo -e "${GREEN}✓${NC} Service enabled (will start on boot)"
 
 # Ask if user wants to start the service now
 echo ""
-read -p "$(echo -e ${BLUE}Start the service now? [Y/n]${NC} )" -n 1 -r
+echo -ne "${BLUE}Start the service now? [Y/n]${NC} "
+read -n 1 -r
 echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     # Stop any existing instance

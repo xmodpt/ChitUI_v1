@@ -134,6 +134,8 @@ echo -e "  • websocket-client   - WebSocket client"
 echo -e "  • requests           - HTTP library"
 echo -e "  • werkzeug           - WSGI utilities"
 echo -e "  • python-socketio    - Socket.IO support"
+echo -e "  • gunicorn           - Production WSGI server"
+echo -e "  • eventlet           - Async networking (for SocketIO)"
 echo -e "  • opencv-python-headless - Camera support (headless)"
 echo -e "  • psutil             - System statistics"
 echo ""
@@ -162,6 +164,8 @@ check_package "websocket" "websocket-client"
 check_package "requests" "requests"
 check_package "werkzeug" "werkzeug"
 check_package "socketio" "python-socketio"
+check_package "gunicorn" "gunicorn"
+check_package "eventlet" "eventlet"
 check_package "cv2" "opencv-python-headless"
 check_package "psutil" "psutil"
 
@@ -258,40 +262,68 @@ echo
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if [ -f "$SCRIPT_DIR/virtual_usb_gadget_fixed.sh" ]; then
+    if [ -f "$SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh" ]; then
         echo -e "${BLUE}Starting Virtual USB Gadget installer...${NC}"
         echo ""
-        sudo bash "$SCRIPT_DIR/virtual_usb_gadget_fixed.sh"
+        sudo bash "$SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh"
         echo ""
         echo -e "${GREEN}✓ Virtual USB Gadget setup complete${NC}"
     else
         echo -e "${RED}✗ Virtual USB Gadget script not found${NC}"
-        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/virtual_usb_gadget_fixed.sh${NC}"
+        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/scripts/virtual_usb_gadget_fixed.sh${NC}"
     fi
 else
     echo -e "${BLUE}⊘ Skipping Virtual USB Gadget installation${NC}"
     echo -e "${YELLOW}  You can install it later by running:${NC}"
-    echo -e "${YELLOW}  sudo ./virtual_usb_gadget_fixed.sh${NC}"
+    echo -e "${YELLOW}  sudo ./scripts/virtual_usb_gadget_fixed.sh${NC}"
 fi
 
 echo ""
 
-# Configure passwordless sudo for USB gadget reload (if USB gadget was installed)
+# Configure passwordless sudo and permissions for USB gadget (if USB gadget was installed)
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${BLUE}Configuring passwordless sudo for USB gadget reload...${NC}"
+    echo -e "${BLUE}Configuring permissions for USB gadget...${NC}"
+    echo ""
+
+    # 1. Configure passwordless sudo for USB gadget operations
     SUDOERS_FILE="/etc/sudoers.d/chitui-usb-gadget"
 
-    # Create sudoers entry for modprobe without password
-    echo "$ACTUAL_USER ALL=(ALL) NOPASSWD: /sbin/modprobe" | sudo tee "$SUDOERS_FILE" > /dev/null
+    echo -e "${BLUE}  Setting up passwordless sudo...${NC}"
+    # Create sudoers entry for commands needed by USB gadget management
+    cat << 'SUDOEOF' | sudo tee "$SUDOERS_FILE" > /dev/null
+# ChitUI USB Gadget - Allow modprobe without password
+%sudo ALL=(ALL) NOPASSWD: /sbin/modprobe
+# Allow writing to UDC control files for USB reconnect
+%sudo ALL=(ALL) NOPASSWD: /usr/bin/tee /sys/kernel/config/usb_gadget/*/UDC
+# Allow sync command
+%sudo ALL=(ALL) NOPASSWD: /bin/sync
+SUDOEOF
     sudo chmod 0440 "$SUDOERS_FILE"
 
     if [ -f "$SUDOERS_FILE" ]; then
-        echo -e "${GREEN}✓ Configured passwordless sudo for modprobe${NC}"
-        echo -e "${GREEN}  ChitUI can now reload USB gadget without password${NC}"
+        echo -e "${GREEN}  ✓ Configured passwordless sudo${NC}"
     else
-        echo -e "${YELLOW}⚠ Failed to configure passwordless sudo${NC}"
-        echo -e "${YELLOW}  You may need to run ChitUI with: sudo python3 main.py${NC}"
+        echo -e "${YELLOW}  ⚠ Failed to configure passwordless sudo${NC}"
     fi
+
+    # 2. Set permissions on USB gadget mount point (if it exists)
+    if [ -d "/mnt/usb_share" ]; then
+        echo -e "${BLUE}  Setting permissions on /mnt/usb_share...${NC}"
+        sudo chmod 777 /mnt/usb_share
+        echo -e "${GREEN}  ✓ USB gadget folder is writable${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ /mnt/usb_share not found yet (will be created on reboot)${NC}"
+        echo -e "${YELLOW}    After reboot, run: sudo chmod 777 /mnt/usb_share${NC}"
+    fi
+
+    # 3. Add user to necessary groups for USB/GPIO access
+    echo -e "${BLUE}  Adding user to required groups...${NC}"
+    sudo usermod -a -G gpio,dialout,plugdev "$ACTUAL_USER" 2>/dev/null || true
+    echo -e "${GREEN}  ✓ User added to access groups${NC}"
+
+    echo ""
+    echo -e "${GREEN}✓ USB gadget permissions configured${NC}"
+    echo -e "${YELLOW}  Note: You may need to log out and back in for group changes to take effect${NC}"
 fi
 
 echo ""
@@ -321,20 +353,20 @@ echo
 echo ""
 
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
-    if [ -f "$SCRIPT_DIR/install_service.sh" ]; then
+    if [ -f "$SCRIPT_DIR/scripts/install_service.sh" ]; then
         echo -e "${BLUE}Starting service installer...${NC}"
         echo ""
-        bash "$SCRIPT_DIR/install_service.sh"
+        bash "$SCRIPT_DIR/scripts/install_service.sh"
         SERVICE_INSTALLED=true
     else
         echo -e "${RED}✗ Service installer script not found${NC}"
-        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/install_service.sh${NC}"
+        echo -e "${YELLOW}  Looking for: $SCRIPT_DIR/scripts/install_service.sh${NC}"
         SERVICE_INSTALLED=false
     fi
 else
     echo -e "${BLUE}⊘ Skipping service installation${NC}"
     echo -e "${YELLOW}  You can install it later by running:${NC}"
-    echo -e "${YELLOW}  ./install_service.sh${NC}"
+    echo -e "${YELLOW}  ./scripts/install_service.sh${NC}"
     SERVICE_INSTALLED=false
 fi
 
@@ -417,7 +449,7 @@ echo ""
 
 echo -e "${BLUE}Useful Commands:${NC}"
 echo -e "  Test manually:      ${YELLOW}python3 $SCRIPT_DIR/main.py${NC}"
-echo -e "  Check USB Gadget:   ${YELLOW}bash $SCRIPT_DIR/check_usb_gadget.sh${NC}"
+echo -e "  Check USB Gadget:   ${YELLOW}bash $SCRIPT_DIR/scripts/check_usb_gadget.sh${NC}"
 echo -e "  Update ChitUI:      ${YELLOW}git pull${NC}"
 echo ""
 

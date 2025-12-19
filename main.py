@@ -1,8 +1,44 @@
+"""
+ChitUI Plus - Web Interface for Chitu 3D Printer Control
+
+This is the main Flask application that provides a web-based interface for controlling
+Chitu-based 3D printers. It supports both network and USB gadget modes for file transfer,
+real-time monitoring via WebSocket connections, and a plugin system for extensibility.
+
+Features:
+- Automatic printer discovery via UDP broadcast
+- File upload/management (both network and USB gadget mode)
+- Real-time printer status monitoring via WebSocket
+- Print control (start, pause, resume, stop)
+- Temperature monitoring and control
+- Plugin system for extensibility (GPIO relays, cameras, etc.)
+- User authentication and settings management
+
+Architecture:
+- Flask: Web framework for HTTP endpoints
+- Flask-SocketIO: Real-time bidirectional communication with web clients
+- WebSocket: Direct communication with printer's SDCP protocol
+- Threading: Concurrent handling of printer connections and monitoring
+
+Configuration:
+- PORT: Web server port (default: 8080)
+- USB_GADGET_PATH: Path to USB gadget mount point (default: /mnt/usb_share)
+- ENABLE_USB_GADGET: Enable/disable USB gadget mode (default: true)
+- USB_AUTO_REFRESH: Auto-refresh USB after upload (default: false)
+- DEBUG: Enable debug logging (default: false)
+
+Author: ChitUI Developer
+License: MIT
+"""
+
+# ===== Core Flask and Web Framework Imports =====
 from flask import Flask, Response, request, stream_with_context, jsonify, send_file, render_template_string, session, redirect
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
 from functools import wraps
+
+# ===== System and Utility Imports =====
 from threading import Thread
 from loguru import logger
 import socket
@@ -17,10 +53,12 @@ import uuid
 import threading
 import subprocess
 
-# Plugin system imports
+# ===== Plugin System Imports =====
 from plugins import PluginManager
 
-# Camera imports
+# ===== Optional Camera Support =====
+# Camera support is optional - requires opencv-python package
+# Used by the IP camera plugin for viewing network cameras
 try:
     import cv2
     CAMERA_SUPPORT = True
@@ -28,50 +66,91 @@ except ImportError:
     CAMERA_SUPPORT = False
     logger.warning("Camera support not available - install opencv-python")
 
+
+# ========================================================================
+# APPLICATION INITIALIZATION AND CONFIGURATION
+# ========================================================================
+
+# ===== Logging Configuration =====
+# Configure loguru logger for structured logging with color support
 debug = False
 log_level = "INFO"
 if os.environ.get("DEBUG"):
     debug = True
     log_level = "DEBUG"
 
-logger.remove()
+logger.remove()  # Remove default handler
 logger.add(sys.stdout, colorize=debug, level=log_level)
 
+# ===== Web Server Configuration =====
+# Port for the web interface (can be overridden via PORT environment variable)
 port = 8080
 if os.environ.get("PORT") is not None:
     port = int(os.environ.get("PORT"))
 
-discovery_timeout = 1
+# ===== Flask Application Setup =====
+# Initialize Flask app with static files served from 'web' directory
+discovery_timeout = 1  # Timeout in seconds for printer discovery
 app = Flask(__name__,
             static_url_path='',
             static_folder='web')
 
-# Secret key for sessions - generate unique one on first run
+# Secret key for sessions - generate unique one on first run or use environment variable
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
 
+# ===== WebSocket and Real-time Communication Setup =====
+# SocketIO for real-time bidirectional communication with web clients
+# async_mode='threading' allows concurrent handling of multiple connections
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins="*")
-websockets = {}
-printers = {}
 
-# ===== Plugin System =====
+# Global state management
+websockets = {}  # Dictionary to store active WebSocket connections to printers {printer_id: ws_connection}
+printers = {}    # Dictionary to store discovered printers {printer_id: printer_info}
+
+# ===== Plugin System Initialization =====
+# Load and initialize plugins from the 'plugins' directory
+# Plugins can extend functionality (GPIO control, cameras, monitoring, etc.)
 plugin_manager = PluginManager(os.path.join(os.path.dirname(__file__), 'plugins'))
 
-# ===== Storage Configuration =====
-# USB Gadget folder - where files are saved so printer can access them as USB storage
+# ========================================================================
+# STORAGE AND FILE UPLOAD CONFIGURATION
+# ========================================================================
+#
+# ChitUI supports two file upload modes:
+#
+# 1. USB Gadget Mode (Recommended for Raspberry Pi):
+#    - Emulates a USB flash drive that the printer can access directly
+#    - Files saved to /mnt/usb_share appear on the printer as USB storage
+#    - Requires USB OTG configuration and proper kernel modules (dwc2, g_mass_storage)
+#    - Faster and more reliable than network uploads
+#
+# 2. Network Upload Mode (Fallback):
+#    - Files uploaded directly to printer via SDCP protocol
+#    - Works over WiFi/Ethernet connection to printer
+#    - Used automatically if USB gadget is not available or disabled
+#
+# ========================================================================
+
+# USB Gadget folder - mount point for the virtual USB drive
+# This folder is exposed to the printer as USB storage
 USB_GADGET_FOLDER = os.environ.get('USB_GADGET_PATH', '/mnt/usb_share')
 
-# DISABLE USB Gadget completely if it crashes your printer
-# Set to 'false' or '0' to force network uploads only (recommended for unstable printers)
+# USB Gadget Master Switch
+# Set ENABLE_USB_GADGET='false' to completely disable USB gadget mode
+# Useful if USB gadget causes printer crashes or stability issues
 ENABLE_USB_GADGET = os.environ.get('ENABLE_USB_GADGET', 'true').lower() not in ['0', 'false', 'no', 'off']
 
-# USB Gadget Auto-Refresh - DISABLE if it crashes your printer
-# Set to '0' or 'false' to disable automatic USB refresh after file upload
-# When disabled, you'll need to manually refresh on printer or reconnect USB
+# USB Gadget Auto-Refresh Configuration
+# When enabled, automatically triggers USB reconnect after file upload
+# This forces the printer to detect new/changed files immediately
+# WARNING: Can cause printer crashes on some models - disable if experiencing issues
+# Set USB_AUTO_REFRESH='false' to disable and refresh manually
 USB_AUTO_REFRESH = os.environ.get('USB_AUTO_REFRESH', 'false').lower() not in ['0', 'false', 'no', 'off']
 
-# Check if USB gadget is available and writable
-USE_USB_GADGET = False
-USB_GADGET_ERROR = None
+# Runtime USB Gadget Status
+# These variables track whether USB gadget is actually available and working
+USE_USB_GADGET = False      # Will be set to True if USB gadget is available and writable
+USB_GADGET_ERROR = None     # Will contain error message if USB gadget fails
 
 if not ENABLE_USB_GADGET:
     USB_GADGET_ERROR = "USB Gadget mode manually disabled (ENABLE_USB_GADGET=false). Using network upload only."
@@ -127,12 +206,35 @@ logger.info(f"Running as user: {os.getenv('USER', 'unknown')} (UID: {os.getuid()
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
-# ===== USB GADGET HELPER FUNCTIONS =====
+# ========================================================================
+# USB GADGET HELPER FUNCTIONS
+# ========================================================================
+#
+# These functions manage the USB gadget interface that emulates a USB flash drive
+# for the printer. The main challenge is forcing the printer to detect file changes
+# after uploading new files to the virtual USB drive.
+#
+# ========================================================================
 
 def trigger_usb_gadget_refresh():
     """
-    Trigger USB gadget to refresh/reconnect so the printer detects new files.
-    This attempts multiple methods to signal the host that the storage has changed.
+    Trigger USB gadget to refresh/reconnect so printer detects new/changed files.
+
+    This function attempts multiple methods to force a USB re-enumeration:
+    1. Filesystem sync to ensure all data is written
+    2. ConfigFS UDC disconnect/reconnect (preferred method)
+    3. Fallback to /sys/class/udc interface
+    4. Module reload as last resort
+
+    The reconnect causes the printer to see the USB drive as "ejected and re-inserted",
+    triggering a file list refresh.
+
+    Returns:
+        bool: True if refresh was successful, False otherwise
+
+    Note:
+        Requires root permissions to write to UDC control files.
+        Some printers may crash during reconnect - use USB_AUTO_REFRESH=false if this occurs.
     """
     if not USE_USB_GADGET:
         logger.warning("USB gadget is not enabled, skipping refresh")
@@ -2007,7 +2109,7 @@ def reload_usb_gadget():
         logger.info("Reloading USB gadget to notify printer...")
 
         # Use the reload script - it works when run manually so call it from Python
-        script_path = os.path.join(os.path.dirname(__file__), 'reload_usb_gadget.sh')
+        script_path = os.path.join(os.path.dirname(__file__), 'scripts', 'reload_usb_gadget.sh')
         if os.path.exists(script_path):
             logger.info(f"Running reload script: {script_path}")
             result = subprocess.run(['sudo', 'bash', script_path],
