@@ -247,6 +247,14 @@ body {
   text-align: left;
 }
 
+.printer-preview-gauge {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
 .printer-preview h3 {
   font-size: 1.5rem;
   font-weight: 600;
@@ -267,6 +275,11 @@ body {
 
   .printer-preview-right {
     text-align: center;
+  }
+
+  .printer-preview-gauge {
+    margin-top: 1rem;
+    padding: 0;
   }
 }
 
@@ -900,8 +913,8 @@ body {
 
 .circular-gauge {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 75px;
+  height: 75px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -945,7 +958,7 @@ body {
 }
 
 .gauge-percentage {
-  font-size: 2rem;
+  font-size: 1rem;
   font-weight: 700;
   font-family: 'Courier New', monospace;
   color: var(--bs-body-color);
@@ -953,12 +966,19 @@ body {
 }
 
 .gauge-label {
-  font-size: 0.75rem;
+  font-size: 0.5rem;
   color: var(--bs-secondary-color);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
   margin-top: 0.25rem;
+}
+
+.gauge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
 }
 
 .storage-details {
@@ -968,11 +988,15 @@ body {
 /* Responsive gauge on smaller screens */
 @media (max-width: 576px) {
   .circular-gauge {
-    width: 120px;
-    height: 120px;
+    width: 60px;
+    height: 60px;
   }
 
   .gauge-percentage {
-    font-size: 1.5rem;
+    font-size: 0.875rem;
+  }
+
+  .gauge-label {
+    font-size: 0.45rem;
   }
 }

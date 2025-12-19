@@ -316,6 +316,31 @@ function handle_printer_attributes(data) {
   }
 }
 
+function updatePrinterStatusGauge(isOnline) {
+  const $gaugeCircle = $('#printerStatusGaugeCircle');
+  const $statusLabel = $('#printerStatusLabel');
+  const $statusIcon = $('#printerStatusIcon i');
+  const circumference = 2 * Math.PI * 80; // 2 * PI * radius (80)
+
+  if (isOnline) {
+    // Show 100% (fully filled) for online
+    $gaugeCircle.css('stroke-dashoffset', 0);
+    $gaugeCircle.removeClass('warning danger');
+    $statusLabel.text('Online');
+    $statusIcon.removeClass('bi-x-circle bi-exclamation-circle')
+                .addClass('bi-check-circle')
+                .css('color', 'var(--success-color)');
+  } else {
+    // Show 0% (empty) for offline
+    $gaugeCircle.css('stroke-dashoffset', circumference);
+    $gaugeCircle.removeClass('warning').addClass('danger');
+    $statusLabel.text('Offline');
+    $statusIcon.removeClass('bi-check-circle bi-exclamation-circle')
+                .addClass('bi-x-circle')
+                .css('color', 'var(--accent-color)');
+  }
+}
+
 function updateStorageDisplay(remainingBytes) {
   // RemainingMemory is in bytes, convert to GB
   const remainingGB = remainingBytes / (1024 * 1024 * 1024);
@@ -508,6 +533,9 @@ function showPrinter(id) {
   var printerIcon = p.image || (p.brand + '_' + p.model).split(" ").join("").toLowerCase() + '.webp'
   $('#printerName').text(p.name)
   $('#printerType').text(p.brand + ' ' + p.model)
+
+  // Update printer status gauge
+  updatePrinterStatusGauge(p.online)
 
   // Hide image and show placeholder while loading
   $("#printerIcon").addClass('d-none').attr('src', '')
