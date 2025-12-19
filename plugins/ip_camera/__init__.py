@@ -24,7 +24,7 @@ try:
     CAMERA_SUPPORT = True
 except ImportError:
     CAMERA_SUPPORT = False
-    logger.warning("OpenCV not installed. IP Camera plugin requires opencv-python")
+    logger.warning("OpenCV not installed. IP Camera plugin requires opencv-python-headless")
 
 
 class IPCameraStream:
@@ -188,7 +188,7 @@ class Plugin(ChitUIPlugin):
         return "ChitUI Plus"
 
     def get_dependencies(self):
-        return ['opencv-python>=4.5.0']
+        return ['opencv-python-headless>=4.5.0']
 
     def load_camera_configs(self):
         """Load camera configurations from file"""
@@ -257,7 +257,7 @@ class Plugin(ChitUIPlugin):
         def start_camera(camera_id):
             """Start a specific camera stream"""
             if not CAMERA_SUPPORT:
-                return jsonify({'ok': False, 'msg': 'OpenCV not installed. Run: pip install opencv-python'})
+                return jsonify({'ok': False, 'msg': 'OpenCV not installed. Run: pip install opencv-python-headless'})
 
             # Check if camera already running
             if camera_id in self.cameras and self.cameras[camera_id].running:
@@ -380,7 +380,7 @@ class Plugin(ChitUIPlugin):
         def test_connection():
             """Test camera connection without starting stream"""
             if not CAMERA_SUPPORT:
-                return jsonify({'ok': False, 'msg': 'OpenCV not installed. Run: pip install opencv-python'})
+                return jsonify({'ok': False, 'msg': 'OpenCV not installed. Run: pip install opencv-python-headless'})
 
             try:
                 data = request.get_json()

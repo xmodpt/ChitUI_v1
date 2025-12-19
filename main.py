@@ -57,14 +57,14 @@ import subprocess
 from plugins import PluginManager
 
 # ===== Optional Camera Support =====
-# Camera support is optional - requires opencv-python package
+# Camera support is optional - requires opencv-python-headless package
 # Used by the IP camera plugin for viewing network cameras
 try:
     import cv2
     CAMERA_SUPPORT = True
 except ImportError:
     CAMERA_SUPPORT = False
-    logger.warning("Camera support not available - install opencv-python")
+    logger.warning("Camera support not available - install opencv-python-headless")
 
 
 # ========================================================================
@@ -522,7 +522,7 @@ def camera_start():
     global camera_stream_active, camera_instance, camera_latest_frame, camera_printer_ip
     
     if not CAMERA_SUPPORT:
-        return jsonify({'ok': False, 'msg': 'Camera support not installed. Run: pip install opencv-python'})
+        return jsonify({'ok': False, 'msg': 'Camera support not installed. Run: pip install opencv-python-headless'})
     
     if camera_stream_active:
         return jsonify({'ok': False, 'msg': 'Camera already running'})
@@ -2629,7 +2629,7 @@ if __name__ == "__main__":
     if CAMERA_SUPPORT:
         logger.info(f"  ✓ Camera Streaming (RTSP)")
     else:
-        logger.info(f"  ✗ Camera Streaming (install opencv-python)")
+        logger.info(f"  ✗ Camera Streaming (install opencv-python-headless)")
     logger.info("=" * 60)
     logger.info(f"Data folder: {DATA_FOLDER}")
     logger.info(f"Settings file: {SETTINGS_FILE}")
