@@ -2287,104 +2287,75 @@ if (btnListView && btnGridView) {
 }
 
 function syncFilesToGrid() {
-  const fileManagerBody = document.getElementById('fileManagerBody');
-  const gridContainer = document.getElementById('fileManagerGridContainer');
+  try {
+    const fileManagerBody = document.getElementById('fileManagerBody');
+    const gridContainer = document.getElementById('fileManagerGridContainer');
 
-  if (!fileManagerBody || !gridContainer) {
-    console.warn('Grid sync: Missing elements');
-    return;
-  }
-
-  const rows = fileManagerBody.querySelectorAll('tr');
-  console.log('Syncing ' + rows.length + ' files to grid view');
-
-  gridContainer.innerHTML = '';
-
-  if (rows.length === 0 || (rows.length === 1 && rows[0].cells.length === 1)) {
-    gridContainer.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>No files found. Upload a file to get started.</div>';
-    return;
-  }
-
-  rows.forEach((row, index) => {
-    const cells = row.querySelectorAll('td');
-
-    if (cells.length >= 2) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = cells[1].innerHTML;
-      const filename = tempDiv.childNodes[0]?.textContent || '';
-      const dataFile = row.getAttribute('data-file');
-
-      if (!filename) return;
-
-      const gridItem = document.createElement('div');
-      gridItem.className = 'col-lg-2 col-md-3 col-sm-4 col-6';
-
-      // Check for printer-provided thumbnail URL first
-      let thumbnailUrl = '';
-      const fileMetadata = currentPrinter && printers[currentPrinter] && printers[currentPrinter]['fileMetadata'];
-      if (fileMetadata && fileMetadata[dataFile || filename]) {
-        const metadata = fileMetadata[dataFile || filename];
-        console.log('File metadata for', filename, ':', metadata);
-        // Check common thumbnail field names
-        thumbnailUrl = metadata.thumbnail || metadata.Thumbnail || metadata.preview || '';
-        // If thumbnail is a relative URL, proxy it through our server
-        if (thumbnailUrl && !thumbnailUrl.startsWith('data:')) {
-          thumbnailUrl = '/thumbnail/' + currentPrinter + '?url=' + encodeURIComponent(thumbnailUrl);
-        }
-      }
-
-      const gridItemDiv = document.createElement('div');
-      gridItemDiv.className = 'file-grid-item';
-      gridItemDiv.setAttribute('data-file', dataFile || filename);
-
-      const thumbnail = document.createElement('div');
-      thumbnail.className = 'file-grid-thumbnail';
-
-      if (thumbnailUrl) {
-        const spinner = document.createElement('div');
-        spinner.className = 'loading-spinner spinner-border spinner-border-sm text-secondary';
-        spinner.setAttribute('role', 'status');
-        spinner.innerHTML = '<span class="visually-hidden">Loading...</span>';
-
-        const img = document.createElement('img');
-        img.src = thumbnailUrl;
-        img.alt = filename;
-        img.className = 'd-none';
-
-        img.addEventListener('load', () => {
-          spinner.classList.add('d-none');
-          img.classList.remove('d-none');
-        });
-
-        img.addEventListener('error', () => {
-          spinner.classList.add('d-none');
-          thumbnail.innerHTML = '<i class="bi bi-file-earmark placeholder-icon"></i>';
-        });
-
-        thumbnail.appendChild(spinner);
-        thumbnail.appendChild(img);
-      } else {
-        thumbnail.innerHTML = '<i class="bi bi-file-earmark placeholder-icon"></i>';
-      }
-
-      const name = document.createElement('div');
-      name.className = 'file-grid-name';
-      name.title = filename;
-      name.textContent = filename;
-
-      const actions = document.createElement('div');
-      actions.className = 'file-grid-actions';
-      actions.innerHTML = tempDiv.innerHTML;
-
-      gridItemDiv.appendChild(thumbnail);
-      gridItemDiv.appendChild(name);
-      gridItemDiv.appendChild(actions);
-      gridItem.appendChild(gridItemDiv);
-      gridContainer.appendChild(gridItem);
+    if (!fileManagerBody || !gridContainer) {
+      console.warn('Grid sync: Missing elements');
+      return;
     }
-  });
 
-  console.log('Grid view updated with ' + gridContainer.children.length + ' files');
+    const rows = fileManagerBody.querySelectorAll('tr');
+    console.log('Syncing ' + rows.length + ' files to grid view');
+
+    gridContainer.innerHTML = '';
+
+    if (rows.length === 0 || (rows.length === 1 && rows[0].cells.length === 1)) {
+      gridContainer.innerHTML = '<div class="col-12 text-center text-muted py-5"><i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 0.5rem;"></i>No files found. Upload a file to get started.</div>';
+      return;
+    }
+
+    rows.forEach((row, index) => {
+      try {
+        const cells = row.querySelectorAll('td');
+
+        if (cells.length >= 2) {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = cells[1].innerHTML;
+          const filename = tempDiv.childNodes[0]?.textContent || '';
+          const dataFile = row.getAttribute('data-file');
+
+          if (!filename) return;
+
+          const gridItem = document.createElement('div');
+          gridItem.className = 'col-lg-2 col-md-3 col-sm-4 col-6';
+
+          // For now, just show placeholder - we'll add thumbnails once we know what data printer sends
+          let thumbnailUrl = '';
+
+          const gridItemDiv = document.createElement('div');
+          gridItemDiv.className = 'file-grid-item';
+          gridItemDiv.setAttribute('data-file', dataFile || filename);
+
+          const thumbnail = document.createElement('div');
+          thumbnail.className = 'file-grid-thumbnail';
+          thumbnail.innerHTML = '<i class="bi bi-file-earmark placeholder-icon"></i>';
+
+          const name = document.createElement('div');
+          name.className = 'file-grid-name';
+          name.title = filename;
+          name.textContent = filename;
+
+          const actions = document.createElement('div');
+          actions.className = 'file-grid-actions';
+          actions.innerHTML = tempDiv.innerHTML;
+
+          gridItemDiv.appendChild(thumbnail);
+          gridItemDiv.appendChild(name);
+          gridItemDiv.appendChild(actions);
+          gridItem.appendChild(gridItemDiv);
+          gridContainer.appendChild(gridItem);
+        }
+      } catch (rowError) {
+        console.error('Error processing row:', rowError);
+      }
+    });
+
+    console.log('Grid view updated with ' + gridContainer.children.length + ' files');
+  } catch (error) {
+    console.error('Error in syncFilesToGrid:', error);
+  }
 }
 
 // Enhance the existing syncTableToFileManager to also sync to grid
