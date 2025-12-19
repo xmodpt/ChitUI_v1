@@ -2602,8 +2602,10 @@ def main():
     Thread(target=check_printer_connections, daemon=True).start()
 
 
+# Initialize the application (runs on both direct execution and Gunicorn import)
+main()
+
 if __name__ == "__main__":
-    main()
 
     logger.info("=" * 60)
     logger.info("ChitUI Starting")
