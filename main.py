@@ -616,6 +616,71 @@ def proxy_thumbnail(printer_id):
         return Response(f'Error: {str(e)}', status=500)
 
 
+@app.route('/file-thumbnail/<path:filename>')
+def extract_file_thumbnail(filename):
+    """Extract thumbnail from .goo file in USB gadget storage"""
+    try:
+        # Strip /local/ or /usb/ prefix if present
+        clean_filename = filename
+        if filename.startswith('/local/'):
+            clean_filename = filename[7:]  # Remove '/local/'
+        elif filename.startswith('/usb/'):
+            clean_filename = filename[5:]  # Remove '/usb/'
+
+        logger.debug(f"Thumbnail request: {filename} -> {clean_filename}")
+
+        # Only allow extraction from USB gadget folder for security
+        file_path = os.path.join(USB_GADGET_FOLDER, clean_filename)
+
+        # Security check - ensure file is within USB gadget folder
+        file_path = os.path.abspath(file_path)
+        usb_folder_abs = os.path.abspath(USB_GADGET_FOLDER)
+        if not file_path.startswith(usb_folder_abs):
+            logger.warning(f"Security: Attempted path traversal to {file_path}")
+            return Response('Invalid file path', status=403)
+
+        if not os.path.exists(file_path):
+            logger.warning(f"File not found: {file_path}")
+            return Response('File not found', status=404)
+
+        if not file_path.lower().endswith('.goo'):
+            return Response('Only .goo files supported', status=400)
+
+        # Read and extract thumbnail from .goo file
+        with open(file_path, 'rb') as f:
+            data = f.read()
+
+            # Look for common image signatures in .goo files
+            # BMP signature: 'BM'
+            bmp_start = data.find(b'BM')
+            if bmp_start != -1:
+                # BMP files start with 'BM' followed by file size
+                # Extract a reasonable chunk (most thumbnails < 1MB)
+                max_size = min(1024 * 1024, len(data) - bmp_start)
+                thumbnail_data = data[bmp_start:bmp_start + max_size]
+
+                # Find the end of BMP data (look for next file marker or end)
+                # For safety, we'll return what we found
+                return Response(thumbnail_data, mimetype='image/bmp')
+
+            # PNG signature: '\x89PNG'
+            png_start = data.find(b'\x89PNG')
+            if png_start != -1:
+                # Look for PNG end marker 'IEND'
+                png_end = data.find(b'IEND', png_start)
+                if png_end != -1:
+                    thumbnail_data = data[png_start:png_end + 8]  # +8 for IEND chunk
+                    return Response(thumbnail_data, mimetype='image/png')
+
+            # No thumbnail found
+            logger.warning(f"No thumbnail found in {filename}")
+            return Response('No thumbnail found', status=404)
+
+    except Exception as e:
+        logger.error(f"Error extracting thumbnail from {filename}: {e}")
+        return Response(f'Error: {str(e)}', status=500)
+
+
 # ============ SETTINGS FUNCTIONS ============
 
 def migrate_old_settings():
