@@ -620,8 +620,17 @@ def proxy_thumbnail(printer_id):
 def extract_file_thumbnail(filename):
     """Extract thumbnail from .goo file in USB gadget storage"""
     try:
+        # Strip /local/ or /usb/ prefix if present
+        clean_filename = filename
+        if filename.startswith('/local/'):
+            clean_filename = filename[7:]  # Remove '/local/'
+        elif filename.startswith('/usb/'):
+            clean_filename = filename[5:]  # Remove '/usb/'
+
+        logger.debug(f"Thumbnail request: {filename} -> {clean_filename}")
+
         # Only allow extraction from USB gadget folder for security
-        file_path = os.path.join(USB_GADGET_FOLDER, filename)
+        file_path = os.path.join(USB_GADGET_FOLDER, clean_filename)
 
         # Security check - ensure file is within USB gadget folder
         file_path = os.path.abspath(file_path)
