@@ -71,10 +71,14 @@ class ChitUIPlugin(ABC):
         if deps:
             for dep in deps:
                 try:
-                    subprocess.check_call(['pip', 'install', dep])
-                    return True
+                    # Try with --break-system-packages first (for Debian 12+)
+                    subprocess.check_call(['pip3', 'install', dep, '--break-system-packages'])
                 except subprocess.CalledProcessError:
-                    return False
+                    try:
+                        # Fallback to --user if --break-system-packages fails
+                        subprocess.check_call(['pip3', 'install', '--user', dep])
+                    except subprocess.CalledProcessError:
+                        return False
         return True
 
     def get_blueprint(self):
