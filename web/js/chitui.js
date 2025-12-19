@@ -422,6 +422,11 @@ function handle_printer_files(data) {
     files = printers[id]['files']
   }
 
+  // Store file metadata including thumbnails
+  if (!printers[id]['fileMetadata']) {
+    printers[id]['fileMetadata'] = {};
+  }
+
   $.each(data.Data.Data.FileList, function (i, f) {
     if (f.type === 0) {
       getPrinterFiles(id, f.name)
@@ -429,7 +434,10 @@ function handle_printer_files(data) {
       if (!files.includes(f.name)) {
         files.push(f.name)
         console.log('Added file:', f.name);
+        console.log('File object data:', f); // Log to see what printer sends
       }
+      // Store full file metadata (may include thumbnail URL)
+      printers[id]['fileMetadata'][f.name] = f;
     }
   })
 
@@ -2311,8 +2319,19 @@ function syncFilesToGrid() {
       const gridItem = document.createElement('div');
       gridItem.className = 'col-lg-2 col-md-3 col-sm-4 col-6';
 
-      const isGooFile = filename.toLowerCase().endsWith('.goo');
-      const thumbnailUrl = isGooFile ? '/file-thumbnail/' + encodeURIComponent(filename) : '';
+      // Check for printer-provided thumbnail URL first
+      let thumbnailUrl = '';
+      const fileMetadata = currentPrinter && printers[currentPrinter] && printers[currentPrinter]['fileMetadata'];
+      if (fileMetadata && fileMetadata[dataFile || filename]) {
+        const metadata = fileMetadata[dataFile || filename];
+        console.log('File metadata for', filename, ':', metadata);
+        // Check common thumbnail field names
+        thumbnailUrl = metadata.thumbnail || metadata.Thumbnail || metadata.preview || '';
+        // If thumbnail is a relative URL, proxy it through our server
+        if (thumbnailUrl && !thumbnailUrl.startsWith('data:')) {
+          thumbnailUrl = '/thumbnail/' + currentPrinter + '?url=' + encodeURIComponent(thumbnailUrl);
+        }
+      }
 
       const gridItemDiv = document.createElement('div');
       gridItemDiv.className = 'file-grid-item';
