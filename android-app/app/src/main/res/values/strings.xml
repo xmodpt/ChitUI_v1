@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ChitUI Remote</string>
+
+    <!-- Connection Settings -->
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">http://192.168.1.x:8080</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="connection_status">Connection Status</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="connecting">Connecting…</string>
+
+    <!-- Navigation -->
+    <string name="nav_printers">Printers</string>
+    <string name="nav_files">Files</string>
+    <string name="nav_camera">Camera</string>
+    <string name="nav_system">System</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Printer Status -->
+    <string name="printer_status">Printer Status</string>
+    <string name="current_layer">Current Layer</string>
+    <string name="total_layers">Total Layers</string>
+    <string name="print_progress">Progress</string>
+    <string name="time_remaining">Time Remaining</string>
+    <string name="temperature">Temperature</string>
+    <string name="start_print">Start Print</string>
+    <string name="pause_print">Pause Print</string>
+    <string name="stop_print">Stop Print</string>
+    <string name="resume_print">Resume Print</string>
+
+    <!-- Files -->
+    <string name="upload_file">Upload File</string>
+    <string name="delete_file">Delete File</string>
+    <string name="file_name">File Name</string>
+    <string name="file_size">File Size</string>
+    <string name="no_files">No files found</string>
+
+    <!-- Camera -->
+    <string name="camera_stream">Camera Stream</string>
+    <string name="no_camera">No camera available</string>
+
+    <!-- System -->
+    <string name="cpu_usage">CPU Usage</string>
+    <string name="memory_usage">Memory Usage</string>
+    <string name="disk_usage">Disk Usage</string>
+    <string name="temperature_label">Temperature</string>
+    <string name="restart_app">Restart ChitUI</string>
+    <string name="reboot_system">Reboot Pi</string>
+
+    <!-- Errors -->
+    <string name="error_connection">Connection error</string>
+    <string name="error_invalid_url">Invalid server URL</string>
+    <string name="error_timeout">Connection timeout</string>
+    <string name="error_unknown">Unknown error occurred</string>
+
+    <!-- Dialogs -->
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Base.Theme.ChitUIRemote" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/chitui_primary</item>
+        <item name="colorPrimaryDark">@color/chitui_primary_dark</item>
+        <item name="colorAccent">@color/chitui_accent</item>
+        <item name="android:colorBackground">@color/chitui_background</item>
+        <item name="colorSurface">@color/chitui_surface</item>
+        <item name="colorError">@color/chitui_error</item>
+    </style>
+
+    <style name="Theme.ChitUIRemote" parent="Base.Theme.ChitUIRemote" />
+</resources>
