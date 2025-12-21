@@ -663,11 +663,11 @@ def load_settings():
                 logger.info(f"Loaded settings: {len(settings.get('printers', {}))} printers configured")
                 # Ensure network settings exist with defaults
                 if 'network' not in settings:
-                    settings['network'] = {'allow_external_access': False}
+                    settings['network'] = {'allow_external_access': True}
                 return settings
         except Exception as e:
             logger.error(f"Error loading settings: {e}")
-    return {"printers": {}, "auto_discover": False, "network": {"allow_external_access": False}}
+    return {"printers": {}, "auto_discover": False, "network": {"allow_external_access": True}}
 
 
 def save_settings(settings):
@@ -2695,12 +2695,13 @@ if __name__ == "__main__":
     logger.info(f"  → Server binding to: {host}")
     logger.info(f"  → Port: {port}")
     if allow_external:
-        logger.info(f"  → External access: ENABLED")
-        logger.warning(f"  ⚠ ChitUI is accessible from outside your local network!")
+        logger.info(f"  → Network access: ENABLED (default)")
+        logger.info(f"  → Accessible from: Local network and internet (with port forwarding)")
         logger.warning(f"  ⚠ Ensure you have a strong password configured!")
     else:
-        logger.info(f"  → External access: DISABLED (localhost only)")
-        logger.info(f"  → To enable external access, go to Settings > Network")
+        logger.info(f"  → Network access: DISABLED")
+        logger.info(f"  → Accessible from: Localhost only (127.0.0.1)")
+        logger.warning(f"  ⚠ Not accessible from other devices on your local network!")
     logger.info("=" * 60)
 
     socketio.run(app, host=host, port=port,

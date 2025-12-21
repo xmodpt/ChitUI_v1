@@ -3,7 +3,7 @@ let currentSettings = {
     printers: {},
     auto_discover: false,
     network: {
-        allow_external_access: false
+        allow_external_access: true
     }
 };
 
@@ -172,9 +172,9 @@ function updateSettingsUI() {
 
     // Update network settings
     if (!currentSettings.network) {
-        currentSettings.network = { allow_external_access: false };
+        currentSettings.network = { allow_external_access: true };
     }
-    $('#allowExternalAccessCheck').prop('checked', currentSettings.network.allow_external_access || false);
+    $('#allowExternalAccessCheck').prop('checked', currentSettings.network.allow_external_access !== false);
     updateNetworkInfo();
 
     // Update saved printers list
@@ -837,7 +837,7 @@ function setDefaultPrinter(printerId, printerName) {
 
 // Update network information display
 function updateNetworkInfo() {
-    const allowExternal = currentSettings.network?.allow_external_access || false;
+    const allowExternal = currentSettings.network?.allow_external_access !== false;
     const port = window.location.port || '8080';
     const hostname = window.location.hostname;
 
@@ -849,12 +849,12 @@ function updateNetworkInfo() {
         $('#networkAccessMode')
             .removeClass('bg-secondary')
             .addClass('bg-success')
-            .text('External Access Enabled');
+            .text('Network Accessible');
     } else {
         $('#networkAccessMode')
             .removeClass('bg-success')
             .addClass('bg-secondary')
-            .text('Local Only');
+            .text('Localhost Only');
     }
 
     // Update current URL

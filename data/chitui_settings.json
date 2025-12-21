@@ -6,7 +6,7 @@
   },
   "auto_discover": false,
   "network": {
-    "allow_external_access": false
+    "allow_external_access": true
   },
   "printers": {
     "944047506c1e0100": {

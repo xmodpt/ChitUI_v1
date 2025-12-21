@@ -632,13 +632,13 @@
                       <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" id="allowExternalAccessCheck">
                         <label class="form-check-label fw-bold" for="allowExternalAccessCheck">
-                          <i class="bi bi-globe2 me-1"></i> Allow External Network Access
+                          <i class="bi bi-globe2 me-1"></i> Network Access
                         </label>
                       </div>
                       <small class="text-muted d-block">
                         <i class="bi bi-info-circle me-1"></i>
-                        When enabled, ChitUI will be accessible from outside your local network (e.g., from the internet).
-                        When disabled, ChitUI will only be accessible from localhost (127.0.0.1).
+                        <strong>Enabled (default):</strong> Accessible from your local network and internet (if you configure router port forwarding).<br>
+                        <strong>Disabled:</strong> Only accessible from localhost (127.0.0.1) - blocks local network access too.
                       </small>
                     </div>
                   </div>
@@ -646,12 +646,13 @@
                   <div class="alert alert-warning">
                     <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Security Notice</h6>
                     <p class="mb-2">
-                      <strong>Enabling external access allows anyone with your IP address to access ChitUI.</strong>
+                      <strong>Network access is enabled by default to allow local network connectivity.</strong>
                     </p>
                     <ul class="mb-2 small">
-                      <li>Ensure you have a strong password configured</li>
-                      <li>Consider using a firewall or VPN for additional security</li>
-                      <li>Only enable this if you need remote access to your printer</li>
+                      <li>Always use a strong password - anyone on your network can access ChitUI</li>
+                      <li>To access from the internet, configure port forwarding (8080) on your router</li>
+                      <li>For internet access, consider using a VPN for additional security</li>
+                      <li>Disable this setting if you only want localhost access (same machine only)</li>
                       <li>Changes require an application restart to take effect</li>
                     </ul>
                   </div>
