@@ -5,6 +5,9 @@
     "session_timeout": 0
   },
   "auto_discover": false,
+  "network": {
+    "allow_external_access": false
+  },
   "printers": {
     "944047506c1e0100": {
       "brand": "ELEGOO",

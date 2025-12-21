@@ -365,6 +365,9 @@
                   <button class="nav-link" data-bs-toggle="pill" data-bs-target="#general-pane" type="button" role="tab">
                     <i class="bi bi-sliders me-2"></i> General
                   </button>
+                  <button class="nav-link" data-bs-toggle="pill" data-bs-target="#network-pane" type="button" role="tab">
+                    <i class="bi bi-globe me-2"></i> Network
+                  </button>
                   <button class="nav-link" data-bs-toggle="pill" data-bs-target="#plugins-pane" type="button" role="tab">
                     <i class="bi bi-puzzle me-2"></i> Plugins
                   </button>
@@ -618,6 +621,63 @@
                   </label>
                 </div>
                 <small class="text-muted">Automatically search for printers when the application starts</small>
+              </div>
+
+              <div class="tab-pane fade" id="network-pane">
+                <div class="mb-4">
+                  <h6 class="mb-3"><i class="bi bi-shield-lock me-2"></i>Network Access Control</h6>
+
+                  <div class="card border-info mb-3">
+                    <div class="card-body">
+                      <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="allowExternalAccessCheck">
+                        <label class="form-check-label fw-bold" for="allowExternalAccessCheck">
+                          <i class="bi bi-globe2 me-1"></i> Allow External Network Access
+                        </label>
+                      </div>
+                      <small class="text-muted d-block">
+                        <i class="bi bi-info-circle me-1"></i>
+                        When enabled, ChitUI will be accessible from outside your local network (e.g., from the internet).
+                        When disabled, ChitUI will only be accessible from localhost (127.0.0.1).
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="alert alert-warning">
+                    <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>Security Notice</h6>
+                    <p class="mb-2">
+                      <strong>Enabling external access allows anyone with your IP address to access ChitUI.</strong>
+                    </p>
+                    <ul class="mb-2 small">
+                      <li>Ensure you have a strong password configured</li>
+                      <li>Consider using a firewall or VPN for additional security</li>
+                      <li>Only enable this if you need remote access to your printer</li>
+                      <li>Changes require an application restart to take effect</li>
+                    </ul>
+                  </div>
+
+                  <div class="card bg-body-secondary">
+                    <div class="card-body">
+                      <h6 class="card-title"><i class="bi bi-info-circle me-2"></i>Current Configuration</h6>
+                      <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                          <tr>
+                            <td class="fw-bold">Server Port:</td>
+                            <td><code id="networkPort">8080</code></td>
+                          </tr>
+                          <tr>
+                            <td class="fw-bold">Access Mode:</td>
+                            <td><span id="networkAccessMode" class="badge bg-secondary">Local Only</span></td>
+                          </tr>
+                          <tr>
+                            <td class="fw-bold">Current URL:</td>
+                            <td><code id="networkCurrentUrl">http://localhost:8080</code></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div class="tab-pane fade" id="plugins-pane">

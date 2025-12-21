@@ -661,10 +661,13 @@ def load_settings():
             with open(SETTINGS_FILE, 'r') as f:
                 settings = json.load(f)
                 logger.info(f"Loaded settings: {len(settings.get('printers', {}))} printers configured")
+                # Ensure network settings exist with defaults
+                if 'network' not in settings:
+                    settings['network'] = {'allow_external_access': False}
                 return settings
         except Exception as e:
             logger.error(f"Error loading settings: {e}")
-    return {"printers": {}, "auto_discover": False}
+    return {"printers": {}, "auto_discover": False, "network": {"allow_external_access": False}}
 
 
 def save_settings(settings):
@@ -2677,6 +2680,29 @@ if __name__ == "__main__":
     logger.info(f"Settings file: {SETTINGS_FILE}")
     logger.info("=" * 60)
 
-    socketio.run(app, host='0.0.0.0', port=port,
+    # Load network settings to determine host binding
+    settings = load_settings()
+    network_settings = settings.get('network', {})
+    allow_external = network_settings.get('allow_external_access', False)
+
+    # Choose host based on network settings
+    # 0.0.0.0 = all interfaces (external access)
+    # 127.0.0.1 = localhost only (local access)
+    host = '0.0.0.0' if allow_external else '127.0.0.1'
+
+    logger.info("=" * 60)
+    logger.info(f"Network Configuration:")
+    logger.info(f"  → Server binding to: {host}")
+    logger.info(f"  → Port: {port}")
+    if allow_external:
+        logger.info(f"  → External access: ENABLED")
+        logger.warning(f"  ⚠ ChitUI is accessible from outside your local network!")
+        logger.warning(f"  ⚠ Ensure you have a strong password configured!")
+    else:
+        logger.info(f"  → External access: DISABLED (localhost only)")
+        logger.info(f"  → To enable external access, go to Settings > Network")
+    logger.info("=" * 60)
+
+    socketio.run(app, host=host, port=port,
                  debug=debug, use_reloader=debug, log_output=True,
                  allow_unsafe_werkzeug=True)
