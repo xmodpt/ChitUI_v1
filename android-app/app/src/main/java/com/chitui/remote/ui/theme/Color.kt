@@ -23,3 +23,6 @@ val StatusConnected = Color(0xFF4CAF50)
 val StatusDisconnected = Color(0xFFF44336)
 val StatusPrinting = Color(0xFF2196F3)
 val StatusIdle = Color(0xFF9E9E9E)
+
+// Top Bar Color
+val AnthraciteGray = Color(0xFF2E2E2E)

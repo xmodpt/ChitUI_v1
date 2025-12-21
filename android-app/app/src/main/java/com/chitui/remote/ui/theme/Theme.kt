@@ -13,6 +13,7 @@ private val DarkColorScheme = darkColorScheme(
     background = ChitUIBackground,
     surface = ChitUISurface,
     error = ChitUIError,
+    primaryContainer = AnthraciteGray,
     onPrimary = Color.White,
     onSecondary = Color.Black,
     onBackground = Color.White,
