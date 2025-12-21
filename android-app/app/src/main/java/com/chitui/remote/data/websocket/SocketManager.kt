@@ -57,13 +57,29 @@ class SocketManager {
                 // Printer updates
                 on("printers") { args ->
                     try {
-                        val data = args[0] as JSONObject
+                        Log.d(TAG, "Received printers event, args count: ${args.size}")
+                        if (args.isEmpty()) {
+                            Log.w(TAG, "Printers event received but no data")
+                            return@on
+                        }
+
+                        val data = args[0]
+                        Log.d(TAG, "Printers raw data type: ${data?.javaClass?.name}")
+                        Log.d(TAG, "Printers raw data: $data")
+
+                        val jsonData = data as? JSONObject ?: JSONObject(data.toString())
+                        Log.d(TAG, "Printers JSON: $jsonData")
+
                         val type = object : TypeToken<Map<String, Printer>>() {}.type
-                        val printersMap: Map<String, Printer> = gson.fromJson(data.toString(), type)
+                        val printersMap: Map<String, Printer> = gson.fromJson(jsonData.toString(), type)
                         _printers.value = printersMap
-                        Log.d(TAG, "Received printers update: ${printersMap.size} printers")
+                        Log.d(TAG, "Successfully parsed ${printersMap.size} printers")
+                        printersMap.forEach { (id, printer) ->
+                            Log.d(TAG, "  Printer: $id -> ${printer.name} (${printer.ip})")
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "Error parsing printers", e)
+                        e.printStackTrace()
                     }
                 }
 
@@ -115,7 +131,9 @@ class SocketManager {
     }
 
     fun requestPrinters() {
+        Log.d(TAG, "Requesting printers... Socket connected: ${socket?.connected()}")
         socket?.emit("printers", JSONObject())
+        Log.d(TAG, "Printers request emitted")
     }
 
     fun isConnected(): Boolean {

@@ -90,6 +90,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     // Connect WebSocket
                     socketManager.connect(sanitizedUrl)
 
+                    // Wait for socket to connect and request printers
+                    kotlinx.coroutines.delay(1500)
+                    Log.d(TAG, "Requesting printers...")
+                    socketManager.requestPrinters()
+
                     _errorMessage.value = null
                 } else {
                     _connectionState.value = ConnectionState.Error("Authentication failed")
