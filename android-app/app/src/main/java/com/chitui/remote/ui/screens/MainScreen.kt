@@ -333,7 +333,7 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
 
             printer.status?.let { status ->
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider()
+                Divider()
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
@@ -344,7 +344,7 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                 if (status.printing && status.printPercent != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
-                        progress = { (status.printPercent / 100f) },
+                        progress = (status.printPercent / 100f),
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
@@ -366,7 +366,7 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
             // Expanded controls
             if (expanded) {
                 Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider()
+                Divider()
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
