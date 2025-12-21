@@ -3,6 +3,7 @@ package com.chitui.remote.ui.screens
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -16,8 +17,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.chitui.remote.data.api.ApiClient
 import com.chitui.remote.ui.theme.StatusConnected
 import com.chitui.remote.ui.theme.StatusDisconnected
 import com.chitui.remote.viewmodel.MainViewModel
@@ -226,7 +232,7 @@ fun MainAppScreen(viewModel: MainViewModel) {
             when (selectedTab) {
                 0 -> PrintersScreen(viewModel = viewModel, printers = printers)
                 1 -> FilesScreen()
-                2 -> CameraScreen()
+                2 -> CameraScreen(printers = printers)
                 3 -> SystemScreen()
             }
         }
@@ -286,6 +292,19 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Printer image if available
+                printer.image?.let { imagePath ->
+                    AsyncImage(
+                        model = "${ApiClient.getBaseUrl()}/$imagePath",
+                        contentDescription = "Printer image",
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = printer.name,
@@ -415,12 +434,93 @@ fun FilesScreen() {
 }
 
 @Composable
-fun CameraScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+fun CameraScreen(printers: Map<String, com.chitui.remote.data.models.Printer>) {
+    if (printers.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = "No cameras",
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "No printers with cameras",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            printers.forEach { (id, printer) ->
+                CameraCard(printer = printer)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CameraCard(printer: com.chitui.remote.data.models.Printer) {
+    var refreshKey by remember { mutableStateOf(0) }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Text("Camera - Coming Soon")
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${printer.name} Camera",
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                IconButton(onClick = { refreshKey++ }) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = "Refresh camera",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Camera snapshot
+            AsyncImage(
+                model = "${ApiClient.getBaseUrl()}/camera/${printer.id}/snapshot?t=$refreshKey",
+                contentDescription = "Camera feed for ${printer.name}",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Fit,
+                error = painterResource(android.R.drawable.ic_menu_camera),
+                placeholder = painterResource(android.R.drawable.ic_menu_camera)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Tap refresh icon to update camera view",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

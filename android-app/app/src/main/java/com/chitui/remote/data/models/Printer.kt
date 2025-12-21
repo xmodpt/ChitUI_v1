@@ -12,6 +12,7 @@ data class Printer(
     val protocol: String?,
     val firmware: String?,
     val enabled: Boolean = true,
+    val image: String? = null,
     val status: PrinterStatus? = null,
     val attributes: PrinterAttributes? = null
 )
