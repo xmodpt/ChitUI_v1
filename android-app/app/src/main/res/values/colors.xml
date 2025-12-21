@@ -21,4 +21,7 @@
     <color name="status_disconnected">#F44336</color>
     <color name="status_printing">#2196F3</color>
     <color name="status_idle">#9E9E9E</color>
+
+    <!-- Launcher Icon -->
+    <color name="ic_launcher_background">#3700B3</color>
 </resources>
