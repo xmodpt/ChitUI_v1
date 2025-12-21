@@ -1,8 +1,18 @@
 package com.chitui.remote.ui.screens
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +26,6 @@ import com.chitui.remote.viewmodel.MainViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    val connectionState by viewModel.connectionState.collectAsState()
     val isAuthenticated by viewModel.isAuthenticated.collectAsState()
 
     if (!isAuthenticated) {
@@ -61,7 +70,7 @@ fun ConnectionScreen(viewModel: MainViewModel) {
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Print,
+                imageVector = Icons.Filled.Settings,
                 contentDescription = "Printer",
                 modifier = Modifier.size(80.dp),
                 tint = MaterialTheme.colorScheme.primary
@@ -117,7 +126,7 @@ fun ConnectionScreen(viewModel: MainViewModel) {
                         .size(12.dp)
                         .padding(end = 4.dp)
                 ) {
-                    androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+                    Canvas(modifier = Modifier.fillMaxSize()) {
                         drawCircle(color = statusColor)
                     }
                 }
@@ -177,7 +186,7 @@ fun MainAppScreen(viewModel: MainViewModel) {
                 title = { Text("ChitUI Remote") },
                 actions = {
                     IconButton(onClick = { viewModel.disconnect() }) {
-                        Icon(Icons.Default.Logout, contentDescription = "Disconnect")
+                        Icon(Icons.Filled.ExitToApp, contentDescription = "Disconnect")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -188,25 +197,25 @@ fun MainAppScreen(viewModel: MainViewModel) {
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Print, contentDescription = "Printers") },
+                    icon = { Icon(Icons.Filled.Home, contentDescription = "Printers") },
                     label = { Text("Printers") },
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Folder, contentDescription = "Files") },
+                    icon = { Icon(Icons.Filled.Folder, contentDescription = "Files") },
                     label = { Text("Files") },
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Videocam, contentDescription = "Camera") },
+                    icon = { Icon(Icons.Filled.Videocam, contentDescription = "Camera") },
                     label = { Text("Camera") },
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Computer, contentDescription = "System") },
+                    icon = { Icon(Icons.Filled.Info, contentDescription = "System") },
                     label = { Text("System") },
                     selected = selectedTab == 3,
                     onClick = { selectedTab = 3 }
@@ -234,7 +243,7 @@ fun PrintersScreen(viewModel: MainViewModel, printers: Map<String, com.chitui.re
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    imageVector = Icons.Default.Print,
+                    imageVector = Icons.Filled.Home,
                     contentDescription = "No printers",
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -291,7 +300,7 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                 }
 
                 Icon(
-                    imageVector = Icons.Default.Print,
+                    imageVector = Icons.Filled.Settings,
                     contentDescription = "Printer",
                     tint = MaterialTheme.colorScheme.primary
                 )
