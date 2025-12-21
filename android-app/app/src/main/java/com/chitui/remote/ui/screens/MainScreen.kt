@@ -1,6 +1,7 @@
 package com.chitui.remote.ui.screens
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -271,16 +272,21 @@ fun PrintersScreen(viewModel: MainViewModel, printers: Map<String, com.chitui.re
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainViewModel) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { expanded = !expanded },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = printer.name,
                         style = MaterialTheme.typography.titleMedium
@@ -297,16 +303,18 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                     )
                 }
 
-                Icon(
-                    imageVector = Icons.Filled.Settings,
-                    contentDescription = "Printer",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.Close else Icons.Filled.Settings,
+                        contentDescription = if (expanded) "Close" else "Settings",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
             printer.status?.let { status ->
                 Spacer(modifier = Modifier.height(12.dp))
-                Divider()
+                HorizontalDivider()
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
@@ -317,7 +325,7 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                 if (status.printing && status.printPercent != null) {
                     Spacer(modifier = Modifier.height(8.dp))
                     LinearProgressIndicator(
-                        progress = (status.printPercent / 100f),
+                        progress = { (status.printPercent / 100f) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
@@ -325,9 +333,74 @@ fun PrinterCard(printer: com.chitui.remote.data.models.Printer, viewModel: MainV
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(top = 4.dp)
                     )
+
+                    status.printTimeRemaining?.let { timeRemaining ->
+                        Text(
+                            text = "Time remaining: ${formatTime(timeRemaining)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+
+            // Expanded controls
+            if (expanded) {
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Printer Controls",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val isPrinting = printer.status?.printing == true
+
+                    if (isPrinting) {
+                        Button(
+                            onClick = { viewModel.pausePrint(printer.id) },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Pause")
+                        }
+                        Button(
+                            onClick = { viewModel.stopPrint(printer.id) },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Stop")
+                        }
+                    } else {
+                        Button(
+                            onClick = { /* TODO: Show file picker */ },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Start Print")
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+// Helper function to format time in seconds to HH:MM:SS
+fun formatTime(seconds: Int): String {
+    val hours = seconds / 3600
+    val minutes = (seconds % 3600) / 60
+    val secs = seconds % 60
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, secs)
+    } else {
+        String.format("%d:%02d", minutes, secs)
     }
 }
 
