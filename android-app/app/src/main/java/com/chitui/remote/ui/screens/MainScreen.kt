@@ -7,12 +7,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -203,13 +201,13 @@ fun MainAppScreen(viewModel: MainViewModel) {
                     onClick = { selectedTab = 0 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Folder, contentDescription = "Files") },
+                    icon = { Icon(Icons.Filled.Add, contentDescription = "Files") },
                     label = { Text("Files") },
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Videocam, contentDescription = "Camera") },
+                    icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Camera") },
                     label = { Text("Camera") },
                     selected = selectedTab == 2,
                     onClick = { selectedTab = 2 }
