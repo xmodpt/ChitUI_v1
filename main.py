@@ -2052,6 +2052,7 @@ def sio_handle_disconnect():
 def sio_handle_printers(data):
     logger.debug('client.printers >> '+str(data))
     load_saved_printers()
+    socketio.emit('printers', printers)
 
 
 @socketio.on('printer_info')
