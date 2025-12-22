@@ -326,12 +326,12 @@ fun PrinterDetailScreen(
 
                         // Progress bar
                         Text(
-                            text = "${status.printPercent}%",
+                            text = "${status.printPercent ?: 0}%",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         LinearProgressIndicator(
-                            progress = (status.printPercent / 100f),
+                            progress = ((status.printPercent ?: 0) / 100f),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(8.dp)
