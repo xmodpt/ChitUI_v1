@@ -22,6 +22,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _printers = MutableStateFlow<Map<String, Printer>>(emptyMap())
     val printers: StateFlow<Map<String, Printer>> = _printers.asStateFlow()
 
+    private val _selectedPrinter = MutableStateFlow<Printer?>(null)
+    val selectedPrinter: StateFlow<Printer?> = _selectedPrinter.asStateFlow()
+
     private val _serverUrl = MutableStateFlow<String>("")
     val serverUrl: StateFlow<String> = _serverUrl.asStateFlow()
 
@@ -64,6 +67,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             socketManager.printers.collect { printersMap ->
                 _printers.value = printersMap
+
+                // Auto-select first printer if none is selected
+                if (_selectedPrinter.value == null && printersMap.isNotEmpty()) {
+                    val firstPrinter = printersMap.values.first()
+                    _selectedPrinter.value = firstPrinter
+                    Log.d(TAG, "Auto-selected printer: ${firstPrinter.name}")
+                } else if (_selectedPrinter.value != null) {
+                    // Update selected printer with latest data
+                    val currentId = _selectedPrinter.value?.id
+                    _selectedPrinter.value = printersMap[currentId]
+                }
             }
         }
     }
@@ -113,7 +127,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             socketManager.disconnect()
             _isAuthenticated.value = false
             _connectionState.value = ConnectionState.Disconnected
+            _selectedPrinter.value = null
         }
+    }
+
+    fun selectPrinter(printer: Printer) {
+        _selectedPrinter.value = printer
+        Log.d(TAG, "Selected printer: ${printer.name}")
     }
 
     fun startPrint(printerId: String, fileName: String) {

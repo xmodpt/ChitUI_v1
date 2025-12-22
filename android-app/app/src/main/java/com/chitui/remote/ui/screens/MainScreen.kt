@@ -182,7 +182,7 @@ fun ConnectionScreen(viewModel: MainViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(viewModel: MainViewModel) {
-    var selectedTab by remember { mutableStateOf(0) }
+    val selectedPrinter by viewModel.selectedPrinter.collectAsState()
     val printers by viewModel.printers.collectAsState()
 
     Scaffold(
@@ -198,42 +198,244 @@ fun MainAppScreen(viewModel: MainViewModel) {
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 )
             )
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Home, contentDescription = "Printers") },
-                    label = { Text("Printers") },
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Add, contentDescription = "Files") },
-                    label = { Text("Files") },
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.PlayArrow, contentDescription = "Camera") },
-                    label = { Text("Camera") },
-                    selected = selectedTab == 2,
-                    onClick = { selectedTab = 2 }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Filled.Info, contentDescription = "System") },
-                    label = { Text("System") },
-                    selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 }
-                )
-            }
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {
-            when (selectedTab) {
-                0 -> PrintersScreen(viewModel = viewModel, printers = printers)
-                1 -> FilesScreen()
-                2 -> CameraScreen(printers = printers)
-                3 -> SystemScreen()
+            if (selectedPrinter == null) {
+                // No printer selected
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            imageVector = Icons.Filled.Home,
+                            contentDescription = "No printers",
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            "No printers found",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            } else {
+                // Show selected printer detail view
+                PrinterDetailScreen(printer = selectedPrinter!!, viewModel = viewModel, allPrinters = printers)
+            }
+        }
+    }
+}
+
+@Composable
+fun PrinterDetailScreen(
+    printer: com.chitui.remote.data.models.Printer,
+    viewModel: MainViewModel,
+    allPrinters: Map<String, com.chitui.remote.data.models.Printer>
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Printer Header - similar to ChitUI's printer preview
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Printer image
+                if (printer.image != null) {
+                    AsyncImage(
+                        model = "${ApiClient.getBaseUrl()}/${printer.image}",
+                        contentDescription = "Printer image",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = "Printer",
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                // Printer info
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = printer.name,
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                    Text(
+                        text = "${printer.brand ?: "Unknown"} ${printer.model ?: ""}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = printer.ip,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Active Print Card - ChitUI style
+        printer.status?.let { status ->
+            if (status.printing) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Active Print",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            Text(
+                                text = status.status.uppercase(),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Progress bar
+                        Text(
+                            text = "${status.printPercent}%",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LinearProgressIndicator(
+                            progress = (status.printPercent / 100f),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(8.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                        )
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Layer and time info
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "Layer: ${status.currentLayer ?: 0} / ${status.totalLayer ?: 0}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            status.printTimeRemaining?.let { timeRemaining ->
+                                Text(
+                                    text = formatTime(timeRemaining),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Print controls
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.pausePrint(printer.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary
+                                )
+                            ) {
+                                Text("Pause")
+                            }
+                            Button(
+                                onClick = { viewModel.stopPrint(printer.id) },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Text("Stop")
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        // Camera Card - ChitUI style
+        var cameraRefreshKey by remember { mutableStateOf(0) }
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Camera",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    IconButton(onClick = { cameraRefreshKey++ }) {
+                        Icon(
+                            imageVector = Icons.Filled.PlayArrow,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Camera stream
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
+                ) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AsyncImage(
+                            model = "${ApiClient.getBaseUrl()}/camera/${printer.id}/snapshot?t=$cameraRefreshKey",
+                            contentDescription = "Camera feed",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Fit,
+                            error = painterResource(android.R.drawable.ic_menu_camera),
+                            placeholder = painterResource(android.R.drawable.ic_menu_camera)
+                        )
+                    }
+                }
             }
         }
     }
