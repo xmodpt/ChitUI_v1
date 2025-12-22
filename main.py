@@ -661,10 +661,13 @@ def load_settings():
             with open(SETTINGS_FILE, 'r') as f:
                 settings = json.load(f)
                 logger.info(f"Loaded settings: {len(settings.get('printers', {}))} printers configured")
+                # Ensure network settings exist with defaults
+                if 'network' not in settings:
+                    settings['network'] = {'allow_external_access': True}
                 return settings
         except Exception as e:
             logger.error(f"Error loading settings: {e}")
-    return {"printers": {}, "auto_discover": False}
+    return {"printers": {}, "auto_discover": False, "network": {"allow_external_access": True}}
 
 
 def save_settings(settings):
@@ -2049,6 +2052,7 @@ def sio_handle_disconnect():
 def sio_handle_printers(data):
     logger.debug('client.printers >> '+str(data))
     load_saved_printers()
+    socketio.emit('printers', printers)
 
 
 @socketio.on('printer_info')
@@ -2677,6 +2681,30 @@ if __name__ == "__main__":
     logger.info(f"Settings file: {SETTINGS_FILE}")
     logger.info("=" * 60)
 
-    socketio.run(app, host='0.0.0.0', port=port,
+    # Load network settings to determine host binding
+    settings = load_settings()
+    network_settings = settings.get('network', {})
+    allow_external = network_settings.get('allow_external_access', False)
+
+    # Choose host based on network settings
+    # 0.0.0.0 = all interfaces (external access)
+    # 127.0.0.1 = localhost only (local access)
+    host = '0.0.0.0' if allow_external else '127.0.0.1'
+
+    logger.info("=" * 60)
+    logger.info(f"Network Configuration:")
+    logger.info(f"  → Server binding to: {host}")
+    logger.info(f"  → Port: {port}")
+    if allow_external:
+        logger.info(f"  → Network access: ENABLED (default)")
+        logger.info(f"  → Accessible from: Local network and internet (with port forwarding)")
+        logger.warning(f"  ⚠ Ensure you have a strong password configured!")
+    else:
+        logger.info(f"  → Network access: DISABLED")
+        logger.info(f"  → Accessible from: Localhost only (127.0.0.1)")
+        logger.warning(f"  ⚠ Not accessible from other devices on your local network!")
+    logger.info("=" * 60)
+
+    socketio.run(app, host=host, port=port,
                  debug=debug, use_reloader=debug, log_output=True,
                  allow_unsafe_werkzeug=True)

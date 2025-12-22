@@ -1,7 +1,10 @@
 // Settings Management
 let currentSettings = {
     printers: {},
-    auto_discover: false
+    auto_discover: false,
+    network: {
+        allow_external_access: true
+    }
 };
 
 // Load settings on page load
@@ -40,6 +43,15 @@ $(document).ready(function() {
     // Auto-discover checkbox
     $('#autoDiscoverCheck').change(function() {
         currentSettings.auto_discover = $(this).is(':checked');
+    });
+
+    // External network access checkbox
+    $('#allowExternalAccessCheck').change(function() {
+        if (!currentSettings.network) {
+            currentSettings.network = {};
+        }
+        currentSettings.network.allow_external_access = $(this).is(':checked');
+        updateNetworkInfo();
     });
 
     // Auto-login toggle
@@ -157,7 +169,14 @@ function loadSettings() {
 function updateSettingsUI() {
     // Update auto-discover checkbox
     $('#autoDiscoverCheck').prop('checked', currentSettings.auto_discover || false);
-    
+
+    // Update network settings
+    if (!currentSettings.network) {
+        currentSettings.network = { allow_external_access: true };
+    }
+    $('#allowExternalAccessCheck').prop('checked', currentSettings.network.allow_external_access !== false);
+    updateNetworkInfo();
+
     // Update saved printers list
     const savedPrintersList = $('#savedPrintersList');
     savedPrintersList.empty();
@@ -814,5 +833,33 @@ function setDefaultPrinter(printerId, printerName) {
             showToast(message, 'danger');
         }
     });
+}
+
+// Update network information display
+function updateNetworkInfo() {
+    const allowExternal = currentSettings.network?.allow_external_access !== false;
+    const port = window.location.port || '8080';
+    const hostname = window.location.hostname;
+
+    // Update port display
+    $('#networkPort').text(port);
+
+    // Update access mode badge
+    if (allowExternal) {
+        $('#networkAccessMode')
+            .removeClass('bg-secondary')
+            .addClass('bg-success')
+            .text('Network Accessible');
+    } else {
+        $('#networkAccessMode')
+            .removeClass('bg-success')
+            .addClass('bg-secondary')
+            .text('Localhost Only');
+    }
+
+    // Update current URL
+    const protocol = window.location.protocol;
+    const currentUrl = `${protocol}//${hostname}:${port}`;
+    $('#networkCurrentUrl').text(currentUrl);
 }
 
