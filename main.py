@@ -36,6 +36,7 @@ from flask import Flask, Response, request, stream_with_context, jsonify, send_f
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from functools import wraps
 
 # ===== System and Utility Imports =====
@@ -122,6 +123,59 @@ token_expiry_hours = int(os.environ.get('TOKEN_EXPIRY_HOURS', 720))
 token_auth = TokenAuth(app.config['SECRET_KEY'], token_expiry_hours=token_expiry_hours)
 token_required = create_token_required_decorator(token_auth)
 logger.info(f"Token authentication initialized (expiry: {token_expiry_hours} hours)")
+
+# ===== Network and CORS Configuration =====
+# CORS configuration for external access
+# This will be configured based on user settings
+cors = None  # Will be initialized with user settings
+
+def init_network_settings():
+    """Initialize network settings with defaults"""
+    settings = load_settings()
+
+    if 'network' not in settings:
+        settings['network'] = {
+            'external_access_enabled': False,
+            'allowed_origins': [],
+            'public_url': '',
+            'cors_enabled': True  # Enable CORS for mobile apps
+        }
+        save_settings(settings)
+        logger.info("Network settings initialized with defaults")
+
+    return settings.get('network', {})
+
+def configure_cors():
+    """Configure CORS based on network settings"""
+    global cors
+
+    network_settings = init_network_settings()
+
+    if network_settings.get('cors_enabled', True):
+        allowed_origins = network_settings.get('allowed_origins', [])
+
+        # If external access is enabled and no specific origins, allow all
+        if network_settings.get('external_access_enabled') and not allowed_origins:
+            cors = CORS(app, resources={r"/*": {"origins": "*"}})
+            logger.info("CORS enabled for ALL origins (external access mode)")
+        elif allowed_origins:
+            cors = CORS(app, resources={r"/*": {"origins": allowed_origins}})
+            logger.info(f"CORS enabled for specific origins: {allowed_origins}")
+        else:
+            # Default: Allow local network and common local addresses
+            default_origins = [
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "http://192.168.*.*:*",
+                "http://10.*.*.*:*"
+            ]
+            cors = CORS(app, resources={r"/*": {"origins": "*"}})
+            logger.info("CORS enabled for local network")
+    else:
+        logger.info("CORS disabled by user settings")
+
+# Initialize CORS with user settings
+configure_cors()
 
 # ========================================================================
 # STORAGE AND FILE UPLOAD CONFIGURATION
@@ -1221,6 +1275,136 @@ def update_settings():
             return jsonify({"success": False, "message": "Failed to save settings"}), 500
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/settings/network', methods=['GET'])
+@login_required
+def get_network_settings():
+    """Get network configuration settings"""
+    settings = load_settings()
+    network_settings = settings.get('network', {
+        'external_access_enabled': False,
+        'allowed_origins': [],
+        'public_url': '',
+        'cors_enabled': True
+    })
+    return jsonify(network_settings)
+
+
+@app.route('/settings/network', methods=['POST'])
+@login_required
+def update_network_settings():
+    """
+    Update network settings and reconfigure CORS
+
+    Request body:
+    {
+        "external_access_enabled": true/false,
+        "allowed_origins": ["http://example.com"],
+        "public_url": "https://my-chitui.example.com",
+        "cors_enabled": true/false
+    }
+    """
+    try:
+        network_config = request.json
+
+        # Validate input
+        if not isinstance(network_config, dict):
+            return jsonify({"success": False, "message": "Invalid request format"}), 400
+
+        # Load current settings
+        settings = load_settings()
+
+        # Update network settings
+        if 'network' not in settings:
+            settings['network'] = {}
+
+        # Update each field if provided
+        if 'external_access_enabled' in network_config:
+            settings['network']['external_access_enabled'] = bool(network_config['external_access_enabled'])
+
+        if 'allowed_origins' in network_config:
+            origins = network_config['allowed_origins']
+            if isinstance(origins, list):
+                settings['network']['allowed_origins'] = origins
+            else:
+                return jsonify({"success": False, "message": "allowed_origins must be a list"}), 400
+
+        if 'public_url' in network_config:
+            settings['network']['public_url'] = str(network_config['public_url'])
+
+        if 'cors_enabled' in network_config:
+            settings['network']['cors_enabled'] = bool(network_config['cors_enabled'])
+
+        # Save settings
+        if save_settings(settings):
+            # Reconfigure CORS with new settings
+            configure_cors()
+
+            logger.info("Network settings updated successfully")
+            return jsonify({
+                "success": True,
+                "message": "Network settings updated. Restart ChitUI for full effect.",
+                "restart_recommended": True
+            })
+        else:
+            return jsonify({"success": False, "message": "Failed to save settings"}), 500
+
+    except Exception as e:
+        logger.error(f"Error updating network settings: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/settings/network/test-origin', methods=['POST'])
+@login_required
+def test_cors_origin():
+    """
+    Test if a specific origin would be allowed
+
+    Request body:
+    {
+        "origin": "http://example.com:3000"
+    }
+    """
+    try:
+        origin = request.json.get('origin', '')
+
+        if not origin:
+            return jsonify({"success": False, "message": "Origin is required"}), 400
+
+        settings = load_settings()
+        network_settings = settings.get('network', {})
+
+        # Check if origin would be allowed
+        external_access = network_settings.get('external_access_enabled', False)
+        allowed_origins = network_settings.get('allowed_origins', [])
+        cors_enabled = network_settings.get('cors_enabled', True)
+
+        if not cors_enabled:
+            allowed = False
+            reason = "CORS is disabled"
+        elif external_access and not allowed_origins:
+            allowed = True
+            reason = "External access enabled (all origins allowed)"
+        elif origin in allowed_origins:
+            allowed = True
+            reason = "Origin in allowed list"
+        else:
+            allowed = False
+            reason = "Origin not in allowed list"
+
+        return jsonify({
+            "success": True,
+            "origin": origin,
+            "allowed": allowed,
+            "reason": reason
+        })
+
+    except Exception as e:
+        logger.error(f"Error testing origin: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 
