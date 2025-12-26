@@ -36,6 +36,7 @@ from flask import Flask, Response, request, stream_with_context, jsonify, send_f
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_socketio import SocketIO
+from flask_cors import CORS
 from functools import wraps
 
 # ===== System and Utility Imports =====
@@ -55,6 +56,9 @@ import subprocess
 
 # ===== Plugin System Imports =====
 from plugins import PluginManager
+
+# ===== Token Authentication for Mobile API =====
+from token_auth import TokenAuth, create_token_required_decorator
 
 # ===== Optional Camera Support =====
 # Camera support is optional - requires opencv-python-headless package
@@ -111,6 +115,67 @@ printers = {}    # Dictionary to store discovered printers {printer_id: printer_
 # Load and initialize plugins from the 'plugins' directory
 # Plugins can extend functionality (GPIO control, cameras, monitoring, etc.)
 plugin_manager = PluginManager(os.path.join(os.path.dirname(__file__), 'plugins'))
+
+# ===== Token Authentication Initialization =====
+# Initialize JWT token authentication for mobile API
+# Token expiry: 720 hours (30 days) - configurable via TOKEN_EXPIRY_HOURS env var
+token_expiry_hours = int(os.environ.get('TOKEN_EXPIRY_HOURS', 720))
+token_auth = TokenAuth(app.config['SECRET_KEY'], token_expiry_hours=token_expiry_hours)
+token_required = create_token_required_decorator(token_auth)
+logger.info(f"Token authentication initialized (expiry: {token_expiry_hours} hours)")
+
+# ===== Network and CORS Configuration =====
+# CORS configuration for external access
+# This will be configured based on user settings
+cors = None  # Will be initialized with user settings
+
+def init_network_settings():
+    """Initialize network settings with defaults"""
+    settings = load_settings()
+
+    if 'network' not in settings:
+        settings['network'] = {
+            'external_access_enabled': False,
+            'allowed_origins': [],
+            'public_url': '',
+            'cors_enabled': True  # Enable CORS for mobile apps
+        }
+        save_settings(settings)
+        logger.info("Network settings initialized with defaults")
+
+    return settings.get('network', {})
+
+def configure_cors():
+    """Configure CORS based on network settings"""
+    global cors
+
+    network_settings = init_network_settings()
+
+    if network_settings.get('cors_enabled', True):
+        allowed_origins = network_settings.get('allowed_origins', [])
+
+        # If external access is enabled and no specific origins, allow all
+        if network_settings.get('external_access_enabled') and not allowed_origins:
+            cors = CORS(app, resources={r"/*": {"origins": "*"}})
+            logger.info("CORS enabled for ALL origins (external access mode)")
+        elif allowed_origins:
+            cors = CORS(app, resources={r"/*": {"origins": allowed_origins}})
+            logger.info(f"CORS enabled for specific origins: {allowed_origins}")
+        else:
+            # Default: Allow local network and common local addresses
+            default_origins = [
+                "http://localhost:*",
+                "http://127.0.0.1:*",
+                "http://192.168.*.*:*",
+                "http://10.*.*.*:*"
+            ]
+            cors = CORS(app, resources={r"/*": {"origins": "*"}})
+            logger.info("CORS enabled for local network")
+    else:
+        logger.info("CORS disabled by user settings")
+
+# Initialize CORS with user settings
+configure_cors()
 
 # ========================================================================
 # STORAGE AND FILE UPLOAD CONFIGURATION
@@ -921,6 +986,257 @@ def get_session_timeout():
         return jsonify({'timeout': 0})
 
 
+# ============ MOBILE API ENDPOINTS ============
+# Token-based authentication endpoints for mobile clients (Android, iOS, etc.)
+
+@app.route('/api/mobile/login', methods=['POST'])
+def mobile_login():
+    """
+    Mobile login endpoint - returns JWT token for authentication
+
+    Request body:
+        {
+            "password": "your_password"
+        }
+
+    Response:
+        {
+            "success": true,
+            "token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+            "expires_in": 2592000,  // seconds (30 days)
+            "user_id": "admin"
+        }
+    """
+    try:
+        data = request.json
+        password = data.get('password', '')
+
+        settings = load_settings()
+        auth = settings.get('auth', {})
+
+        # Check if auth is properly configured
+        if not auth or 'password_hash' not in auth:
+            logger.error("Auth configuration is missing or corrupt")
+            return jsonify({
+                'success': False,
+                'message': 'Authentication system error'
+            }), 500
+
+        # Verify password
+        if check_password_hash(auth['password_hash'], password):
+            # Generate JWT token
+            token = token_auth.generate_token(user_id='admin')
+
+            if token:
+                logger.info("Mobile user logged in successfully - token generated")
+                return jsonify({
+                    'success': True,
+                    'token': token,
+                    'expires_in': token_expiry_hours * 3600,  # Convert hours to seconds
+                    'user_id': 'admin',
+                    'require_password_change': auth.get('require_password_change', False)
+                })
+            else:
+                logger.error("Failed to generate token")
+                return jsonify({
+                    'success': False,
+                    'message': 'Failed to generate authentication token'
+                }), 500
+        else:
+            logger.warning("Failed mobile login attempt")
+            return jsonify({
+                'success': False,
+                'message': 'Invalid password'
+            }), 401
+
+    except Exception as e:
+        logger.error(f"Mobile login error: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'message': 'Login failed'
+        }), 500
+
+
+@app.route('/api/mobile/refresh-token', methods=['POST'])
+@token_required
+def mobile_refresh_token():
+    """
+    Refresh JWT token - get a new token with extended expiry
+
+    Headers:
+        Authorization: Bearer <current_token>
+
+    Response:
+        {
+            "success": true,
+            "token": "new_token_here",
+            "expires_in": 2592000
+        }
+    """
+    try:
+        # Get current token from request
+        old_token = token_auth.get_token_from_request()
+
+        # Generate new token
+        new_token = token_auth.refresh_token(old_token)
+
+        if new_token:
+            logger.info("Token refreshed successfully")
+            return jsonify({
+                'success': True,
+                'token': new_token,
+                'expires_in': token_expiry_hours * 3600
+            })
+        else:
+            logger.error("Failed to refresh token")
+            return jsonify({
+                'success': False,
+                'message': 'Failed to refresh token'
+            }), 500
+
+    except Exception as e:
+        logger.error(f"Token refresh error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Token refresh failed'
+        }), 500
+
+
+@app.route('/api/mobile/printers', methods=['GET'])
+@token_required
+def mobile_get_printers():
+    """
+    Get list of all printers with their current status
+
+    Headers:
+        Authorization: Bearer <token>
+
+    Response:
+        {
+            "success": true,
+            "printers": [
+                {
+                    "id": "printer123",
+                    "name": "My Printer",
+                    "ip": "192.168.1.100",
+                    "status": "connected",
+                    "current_file": "model.ctb",
+                    "progress": 45,
+                    ...
+                }
+            ]
+        }
+    """
+    try:
+        printer_list = []
+        for printer_id, printer in printers.items():
+            printer_list.append(printer)
+
+        return jsonify({
+            'success': True,
+            'printers': printer_list,
+            'count': len(printer_list)
+        })
+
+    except Exception as e:
+        logger.error(f"Mobile get printers error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to get printers'
+        }), 500
+
+
+@app.route('/api/mobile/printer/<printer_id>/info', methods=['GET'])
+@token_required
+def mobile_get_printer_info(printer_id):
+    """
+    Get detailed information about a specific printer
+
+    Headers:
+        Authorization: Bearer <token>
+
+    Response:
+        {
+            "success": true,
+            "printer": {
+                "id": "printer123",
+                "name": "My Printer",
+                "attributes": {...},
+                "files": [...],
+                ...
+            }
+        }
+    """
+    try:
+        if printer_id in printers:
+            return jsonify({
+                'success': True,
+                'printer': printers[printer_id]
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': 'Printer not found'
+            }), 404
+
+    except Exception as e:
+        logger.error(f"Mobile get printer info error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to get printer info'
+        }), 500
+
+
+@app.route('/api/mobile/status', methods=['GET'])
+@token_required
+def mobile_get_status():
+    """
+    Get ChitUI system status
+
+    Headers:
+        Authorization: Bearer <token>
+
+    Response:
+        {
+            "success": true,
+            "status": {
+                "version": "1.0.0",
+                "printer_count": 2,
+                "usb_gadget_enabled": true,
+                ...
+            }
+        }
+    """
+    try:
+        status_info = {
+            "usb_gadget_enabled": USE_USB_GADGET,
+            "usb_gadget_available": USB_GADGET_AVAILABLE,
+            "usb_auto_refresh": USB_AUTO_REFRESH,
+            "upload_folder": UPLOAD_FOLDER,
+            "data_folder": DATA_FOLDER,
+            "camera_support": CAMERA_SUPPORT,
+            "printer_count": len(printers),
+            "active_connections": len(websockets)
+        }
+
+        return jsonify({
+            'success': True,
+            'status': status_info
+        })
+
+    except Exception as e:
+        logger.error(f"Mobile get status error: {e}")
+        return jsonify({
+            'success': False,
+            'message': 'Failed to get status'
+        }), 500
+
+
+# ============ END MOBILE API ENDPOINTS ============
+
+
 @app.route("/")
 def web_index():
     """Main application page - requires authentication"""
@@ -959,6 +1275,136 @@ def update_settings():
             return jsonify({"success": False, "message": "Failed to save settings"}), 500
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/settings/network', methods=['GET'])
+@login_required
+def get_network_settings():
+    """Get network configuration settings"""
+    settings = load_settings()
+    network_settings = settings.get('network', {
+        'external_access_enabled': False,
+        'allowed_origins': [],
+        'public_url': '',
+        'cors_enabled': True
+    })
+    return jsonify(network_settings)
+
+
+@app.route('/settings/network', methods=['POST'])
+@login_required
+def update_network_settings():
+    """
+    Update network settings and reconfigure CORS
+
+    Request body:
+    {
+        "external_access_enabled": true/false,
+        "allowed_origins": ["http://example.com"],
+        "public_url": "https://my-chitui.example.com",
+        "cors_enabled": true/false
+    }
+    """
+    try:
+        network_config = request.json
+
+        # Validate input
+        if not isinstance(network_config, dict):
+            return jsonify({"success": False, "message": "Invalid request format"}), 400
+
+        # Load current settings
+        settings = load_settings()
+
+        # Update network settings
+        if 'network' not in settings:
+            settings['network'] = {}
+
+        # Update each field if provided
+        if 'external_access_enabled' in network_config:
+            settings['network']['external_access_enabled'] = bool(network_config['external_access_enabled'])
+
+        if 'allowed_origins' in network_config:
+            origins = network_config['allowed_origins']
+            if isinstance(origins, list):
+                settings['network']['allowed_origins'] = origins
+            else:
+                return jsonify({"success": False, "message": "allowed_origins must be a list"}), 400
+
+        if 'public_url' in network_config:
+            settings['network']['public_url'] = str(network_config['public_url'])
+
+        if 'cors_enabled' in network_config:
+            settings['network']['cors_enabled'] = bool(network_config['cors_enabled'])
+
+        # Save settings
+        if save_settings(settings):
+            # Reconfigure CORS with new settings
+            configure_cors()
+
+            logger.info("Network settings updated successfully")
+            return jsonify({
+                "success": True,
+                "message": "Network settings updated. Restart ChitUI for full effect.",
+                "restart_recommended": True
+            })
+        else:
+            return jsonify({"success": False, "message": "Failed to save settings"}), 500
+
+    except Exception as e:
+        logger.error(f"Error updating network settings: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/settings/network/test-origin', methods=['POST'])
+@login_required
+def test_cors_origin():
+    """
+    Test if a specific origin would be allowed
+
+    Request body:
+    {
+        "origin": "http://example.com:3000"
+    }
+    """
+    try:
+        origin = request.json.get('origin', '')
+
+        if not origin:
+            return jsonify({"success": False, "message": "Origin is required"}), 400
+
+        settings = load_settings()
+        network_settings = settings.get('network', {})
+
+        # Check if origin would be allowed
+        external_access = network_settings.get('external_access_enabled', False)
+        allowed_origins = network_settings.get('allowed_origins', [])
+        cors_enabled = network_settings.get('cors_enabled', True)
+
+        if not cors_enabled:
+            allowed = False
+            reason = "CORS is disabled"
+        elif external_access and not allowed_origins:
+            allowed = True
+            reason = "External access enabled (all origins allowed)"
+        elif origin in allowed_origins:
+            allowed = True
+            reason = "Origin in allowed list"
+        else:
+            allowed = False
+            reason = "Origin not in allowed list"
+
+        return jsonify({
+            "success": True,
+            "origin": origin,
+            "allowed": allowed,
+            "reason": reason
+        })
+
+    except Exception as e:
+        logger.error(f"Error testing origin: {e}")
         return jsonify({"success": False, "message": str(e)}), 500
 
 
