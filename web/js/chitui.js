@@ -1801,17 +1801,66 @@ const sidebar = document.querySelector('.app-sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
 function toggleSidebar() {
+  // Don't toggle if sidebar is pinned
+  if (sidebar.classList.contains('pinned')) {
+    return;
+  }
   sidebar.classList.toggle('show');
   sidebarOverlay.classList.toggle('show');
   document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
 }
 
 if (mobileMenuToggle) {
-  mobileMenuToggle.addEventListener('click', toggleSidebar);
+  mobileMenuToggle.addEventListener('click', function() {
+    // Show sidebar even if pinned when using mobile menu toggle
+    if (sidebar.classList.contains('pinned')) {
+      sidebar.classList.remove('show');
+      sidebarOverlay.classList.remove('show');
+      document.body.style.overflow = '';
+    } else {
+      toggleSidebar();
+    }
+  });
 }
 
 if (sidebarOverlay) {
   sidebarOverlay.addEventListener('click', toggleSidebar);
+}
+
+// Sidebar pin functionality
+const sidebarPinBtn = document.getElementById('sidebarPinBtn');
+const appContent = document.querySelector('.app-content');
+let sidebarPinned = localStorage.getItem('sidebarPinned') === 'true';
+
+function updateSidebarPinState() {
+  const pinIcon = sidebarPinBtn.querySelector('i');
+
+  if (sidebarPinned) {
+    sidebar.classList.add('pinned');
+    sidebar.classList.remove('show');
+    appContent.classList.add('sidebar-pinned');
+    sidebarOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+    pinIcon.className = 'bi bi-pin-fill';
+    sidebarPinBtn.title = 'Unpin sidebar';
+  } else {
+    sidebar.classList.remove('pinned');
+    appContent.classList.remove('sidebar-pinned');
+    pinIcon.className = 'bi bi-pin-angle';
+    sidebarPinBtn.title = 'Pin sidebar';
+  }
+}
+
+if (sidebarPinBtn) {
+  // Load saved pin state on page load
+  updateSidebarPinState();
+
+  sidebarPinBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    sidebarPinned = !sidebarPinned;
+    localStorage.setItem('sidebarPinned', sidebarPinned);
+    updateSidebarPinState();
+  });
 }
 
 // File upload drag and drop
