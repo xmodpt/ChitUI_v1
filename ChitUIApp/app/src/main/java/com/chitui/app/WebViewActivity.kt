@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -55,8 +57,8 @@ class WebViewActivity : AppCompatActivity() {
 
             // Set WebViewClient to handle page navigation
             webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView, url: String): Boolean {
-                    view.loadUrl(url)
+                override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    view.loadUrl(request.url.toString())
                     return true
                 }
             }
@@ -67,14 +69,18 @@ class WebViewActivity : AppCompatActivity() {
             // Load the URL
             loadUrl(url)
         }
-    }
 
-    override fun onBackPressed() {
-        if (binding.webview.canGoBack()) {
-            binding.webview.goBack()
-        } else {
-            super.onBackPressed()
-        }
+        // Handle back press with modern API
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (binding.webview.canGoBack()) {
+                    binding.webview.goBack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun onDestroy() {
