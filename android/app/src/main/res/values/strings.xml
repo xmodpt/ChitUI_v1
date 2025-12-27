@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ChitUI</string>
+
+    <!-- Login -->
+    <string name="login_title">Connect to ChitUI</string>
+    <string name="server_url">Server URL</string>
+    <string name="server_url_hint">http://192.168.1.100:8080</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="remember_me">Remember me</string>
+
+    <!-- Printers -->
+    <string name="printers">Printers</string>
+    <string name="no_printers">No printers found</string>
+    <string name="refresh">Refresh</string>
+    <string name="discover_printers">Discover Printers</string>
+
+    <!-- Printer Status -->
+    <string name="status_idle">Idle</string>
+    <string name="status_printing">Printing</string>
+    <string name="status_paused">Paused</string>
+    <string name="status_error">Error</string>
+    <string name="status_offline">Offline</string>
+
+    <!-- Actions -->
+    <string name="start_print">Start Print</string>
+    <string name="pause_print">Pause</string>
+    <string name="resume_print">Resume</string>
+    <string name="stop_print">Stop</string>
+    <string name="delete_file">Delete File</string>
+    <string name="upload_file">Upload File</string>
+
+    <!-- Details -->
+    <string name="progress">Progress</string>
+    <string name="layer">Layer</string>
+    <string name="time_remaining">Time Remaining</string>
+    <string name="current_file">Current File</string>
+    <string name="printer_files">Files</string>
+
+    <!-- Settings -->
+    <string name="settings">Settings</string>
+    <string name="logout">Logout</string>
+    <string name="notifications">Notifications</string>
+    <string name="notification_print_complete">Notify when print completes</string>
+    <string name="notification_errors">Notify on errors</string>
+
+    <!-- Errors -->
+    <string name="error_connection">Connection error</string>
+    <string name="error_authentication">Authentication failed</string>
+    <string name="error_invalid_url">Invalid server URL</string>
+    <string name="error_generic">An error occurred</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Printer Status</string>
+    <string name="notification_channel_desc">Notifications about printer status</string>
+    <string name="notification_print_started">Print started</string>
+    <string name="notification_print_finished">Print finished</string>
+    <string name="notification_print_failed">Print failed</string>
+</resources>
