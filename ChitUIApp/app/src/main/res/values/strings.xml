@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ChitUI</string>
+    <string name="enter_server_address">Enter your ChitUI server address</string>
+    <string name="server_hint">e.g., 192.168.1.100:8000</string>
+    <string name="connect">Connect</string>
+</resources>
