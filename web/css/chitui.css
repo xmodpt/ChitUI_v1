@@ -205,11 +205,13 @@ body {
   min-height: calc(100vh - var(--header-height));
   overflow-y: auto;
   overflow-x: hidden;
-  transition: margin-left 0.3s;
+  transition: margin-left 0.3s, padding-left 0.3s, padding-right 0.3s;
 }
 
 .app-content.sidebar-pinned {
   margin-left: var(--sidebar-width);
+  padding-left: 3rem;
+  padding-right: 3rem;
 }
 
 .dashboard-card {
@@ -675,6 +677,11 @@ body {
 @media (max-width: 992px) {
   .app-content {
     padding: 1rem;
+  }
+
+  .app-content.sidebar-pinned {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 
   .app-header {
