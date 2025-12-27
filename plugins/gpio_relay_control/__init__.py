@@ -117,16 +117,30 @@ class Plugin(ChitUIPlugin):
             # Set GPIO mode to BCM numbering
             GPIO.setmode(GPIO.BCM)
 
-            # Disable warnings
-            GPIO.setwarnings(False)
+            # Enable warnings temporarily for debugging
+            GPIO.setwarnings(True)
 
             # Setup relay pins as outputs (only for enabled relays)
             for i in range(1, 5):
                 if self.config.get(f'relay{i}_enabled', True):
-                    GPIO.setup(self.config[f'relay{i}_pin'], GPIO.OUT)
-                    GPIO.output(self.config[f'relay{i}_pin'], self.get_gpio_level(i, self.config[f'relay{i}_state']))
+                    pin = self.config[f'relay{i}_pin']
+                    try:
+                        # Clean up the pin first in case it was used before
+                        GPIO.cleanup(pin)
 
-            print("GPIO relay pins initialized successfully")
+                        # Setup pin as output
+                        GPIO.setup(pin, GPIO.OUT)
+
+                        # Set initial state
+                        initial_level = self.get_gpio_level(i, self.config[f'relay{i}_state'])
+                        GPIO.output(pin, initial_level)
+
+                        print(f"✓ Relay {i} (GPIO {pin}): Initialized successfully")
+                    except Exception as e:
+                        print(f"✗ Relay {i} (GPIO {pin}): FAILED - {e}")
+                        # Continue with other relays even if one fails
+
+            print("GPIO relay pins initialization completed")
         except Exception as e:
             print(f"Error initializing GPIO: {e}")
 
