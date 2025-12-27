@@ -100,6 +100,10 @@ body {
   transform: translateX(0);
 }
 
+.app-sidebar.pinned {
+  transform: translateX(0);
+}
+
 .sidebar-section {
   padding: 1.5rem 1rem;
   border-bottom: 1px solid var(--bs-border-color);
@@ -201,6 +205,11 @@ body {
   min-height: calc(100vh - var(--header-height));
   overflow-y: auto;
   overflow-x: hidden;
+  transition: margin-left 0.3s;
+}
+
+.app-content.sidebar-pinned {
+  margin-left: var(--sidebar-width);
 }
 
 .dashboard-card {
