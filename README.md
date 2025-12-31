@@ -1,6 +1,10 @@
-# ChitUI
+<div align="center">
+  <img src="img/logo.png" alt="ChitUI Logo" width="200"/>
 
-Web-based interface for controlling Chitu-based 3D printers with real-time monitoring, file management, and plugin support.
+  # ChitUI
+
+  Web-based interface for controlling Chitu-based 3D printers with real-time monitoring, file management, and plugin support.
+</div>
 
 ## Features
 
