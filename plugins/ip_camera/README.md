@@ -1,6 +1,6 @@
-# IP Camera Plugin for ChitUI Plus
+# IP Camera Plugin for ChitUI
 
-Stream IP cameras in ChitUI Plus using RTSP, HTTP/MJPEG, or other protocols. This plugin leverages OpenCV with GStreamer and FFmpeg support for robust camera streaming.
+Stream IP cameras in ChitUI using RTSP, HTTP/MJPEG, or other protocols. This plugin leverages OpenCV with GStreamer and FFmpeg support for robust camera streaming.
 
 ## Features
 
@@ -21,7 +21,7 @@ Stream IP cameras in ChitUI Plus using RTSP, HTTP/MJPEG, or other protocols. Thi
 
 ## Installation
 
-The plugin is already included in ChitUI Plus. Dependencies will be installed automatically when you enable the plugin.
+The plugin is already included in ChitUI. Dependencies will be installed automatically when you enable the plugin.
 
 To manually install dependencies:
 
@@ -43,7 +43,7 @@ sudo apt-get install gstreamer1.0-tools gstreamer1.0-plugins-bad gstreamer1.0-pl
 
 ### Adding a Camera
 
-1. Navigate to the **IP Camera** tab in ChitUI Plus
+1. Navigate to the **IP Camera** tab in ChitUI
 2. Click **Configure Cameras**
 3. Fill in the camera details:
    - **Camera Name**: A friendly name for your camera (e.g., "Xiaomi Camera 2K")
@@ -115,7 +115,7 @@ Click the **Stop** button on any active camera to stop streaming.
 
 ### Camera Won't Connect
 
-1. **Check Network**: Ensure the camera is on the same network as ChitUI Plus
+1. **Check Network**: Ensure the camera is on the same network as ChitUI
 2. **Verify URL**: Test the RTSP URL with VLC or another media player
 3. **Check Authentication**: Make sure username/password are included in the URL if required
 4. **Protocol**: Try switching between RTSP and HTTP/MJPEG protocols
@@ -177,11 +177,11 @@ Camera configurations are stored in:
 
 ## Support
 
-For issues or feature requests, please visit the ChitUI Plus repository.
+For issues or feature requests, please visit the ChitUI repository.
 
 ## License
 
-This plugin is part of ChitUI Plus and follows the same license.
+This plugin is part of ChitUI and follows the same license.
 
 ## Version History
 

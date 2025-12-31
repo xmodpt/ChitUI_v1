@@ -1,5 +1,5 @@
 #!/bin/bash
-# ChitUI Plus - Complete Installation Script
+# ChitUI - Complete Installation Script
 # This script installs all components with optional choices for each step
 
 set -e
@@ -38,8 +38,8 @@ cat << "EOF"
 EOF
 echo -e "${NC}"
 
-echo -e "${BLUE}Welcome to ChitUI Plus Installation!${NC}"
-echo -e "${BLUE}This installer will guide you through setting up ChitUI Plus.${NC}"
+echo -e "${BLUE}Welcome to ChitUI Installation!${NC}"
+echo -e "${BLUE}This installer will guide you through setting up ChitUI.${NC}"
 echo ""
 echo -e "${YELLOW}You will be asked before installing each component.${NC}"
 echo ""
@@ -56,6 +56,14 @@ echo -e "  User:           ${GREEN}$ACTUAL_USER${NC}"
 echo -e "  Home:           ${GREEN}$ACTUAL_HOME${NC}"
 echo -e "  Install Path:   ${GREEN}$SCRIPT_DIR${NC}"
 echo ""
+
+# Check if installed in recommended location
+RECOMMENDED_PATH="$ACTUAL_HOME/ChitUI"
+if [ "$SCRIPT_DIR" != "$RECOMMENDED_PATH" ]; then
+    echo -e "${YELLOW}Note: ChitUI is recommended to be installed at ~/ChitUI${NC}"
+    echo -e "${YELLOW}      Current location: $SCRIPT_DIR${NC}"
+    echo ""
+fi
 
 read -p "$(echo -e ${BOLD}Press Enter to begin installation...${NC})" -r
 echo ""
@@ -74,7 +82,7 @@ echo -e "${BLUE}Checking for Python 3...${NC}"
 if ! command -v python3 &> /dev/null; then
     echo -e "${RED}✗ Python 3 is not installed${NC}"
     echo ""
-    echo -e "${YELLOW}Python 3 is required to run ChitUI Plus.${NC}"
+    echo -e "${YELLOW}Python 3 is required to run ChitUI.${NC}"
     read -p "$(echo -e ${BLUE}Would you like to install Python 3 now? [Y/n]${NC} )" -n 1 -r
     echo
     if [[ ! $REPLY =~ ^[Nn]$ ]]; then
@@ -126,7 +134,7 @@ echo -e "${CYAN}${BOLD}║  Step 2: Python Dependencies                 ║${NC}
 echo -e "${CYAN}${BOLD}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 
-echo -e "${BLUE}ChitUI Plus requires the following Python packages:${NC}"
+echo -e "${BLUE}ChitUI requires the following Python packages:${NC}"
 echo -e "  • flask              - Web framework"
 echo -e "  • flask-socketio     - WebSocket support"
 echo -e "  • loguru             - Logging"
@@ -191,7 +199,7 @@ else
         echo ""
         echo -e "${GREEN}✓ Python dependencies installed!${NC}"
     else
-        echo -e "${RED}Warning: ChitUI Plus may not work without all dependencies${NC}"
+        echo -e "${RED}Warning: ChitUI may not work without all dependencies${NC}"
         read -p "$(echo -e ${YELLOW}Continue anyway? [y/N]${NC} )" -n 1 -r
         echo
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -222,7 +230,7 @@ fi
 # Check main.py
 if [ ! -f "$SCRIPT_DIR/main.py" ]; then
     echo -e "${RED}✗ main.py not found in $SCRIPT_DIR${NC}"
-    echo -e "${YELLOW}  Please ensure you're in the ChitUI Plus directory${NC}"
+    echo -e "${YELLOW}  Please ensure you're in the ChitUI directory${NC}"
     exit 1
 fi
 echo -e "${GREEN}✓ Found main.py${NC}"
@@ -334,13 +342,13 @@ echo -e "${CYAN}${BOLD}╚══════════════════
 echo ""
 
 echo -e "${BLUE}What is the Auto-Start Service?${NC}"
-echo -e "  Installs ChitUI Plus as a system service that:"
+echo -e "  Installs ChitUI as a system service that:"
 echo -e "  • ${GREEN}Starts automatically${NC} when your Pi boots"
 echo -e "  • ${GREEN}Restarts automatically${NC} if it crashes"
 echo -e "  • ${GREEN}Runs in the background${NC} (no terminal needed)"
 echo ""
 echo -e "${YELLOW}Alternative: Run manually${NC}"
-echo -e "  If you skip this, you can run ChitUI Plus manually with:"
+echo -e "  If you skip this, you can run ChitUI manually with:"
 echo -e "  ${CYAN}./run.sh${NC}"
 echo ""
 
@@ -403,19 +411,19 @@ fi
 
 echo ""
 echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}${BOLD}  How to Access ChitUI Plus${NC}"
+echo -e "${CYAN}${BOLD}  How to Access ChitUI${NC}"
 echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════${NC}"
 echo ""
 
 if [ "$SERVICE_INSTALLED" = true ]; then
     echo -e "${BLUE}Service Management:${NC}"
-    echo -e "  Check Status:  ${YELLOW}sudo systemctl status chitui-plus${NC}"
-    echo -e "  View Logs:     ${YELLOW}journalctl -u chitui-plus -f${NC}"
-    echo -e "  Restart:       ${YELLOW}sudo systemctl restart chitui-plus${NC}"
-    echo -e "  Stop:          ${YELLOW}sudo systemctl stop chitui-plus${NC}"
+    echo -e "  Check Status:  ${YELLOW}sudo systemctl status chitui${NC}"
+    echo -e "  View Logs:     ${YELLOW}journalctl -u chitui -f${NC}"
+    echo -e "  Restart:       ${YELLOW}sudo systemctl restart chitui${NC}"
+    echo -e "  Stop:          ${YELLOW}sudo systemctl stop chitui${NC}"
     echo ""
 else
-    echo -e "${BLUE}To Start ChitUI Plus:${NC}"
+    echo -e "${BLUE}To Start ChitUI:${NC}"
     echo -e "  ${YELLOW}cd $SCRIPT_DIR${NC}"
     echo -e "  ${YELLOW}./run.sh${NC}"
     echo ""
@@ -437,25 +445,24 @@ echo -e "${CYAN}${BOLD}  Additional Resources${NC}"
 echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════${NC}"
 echo ""
 echo -e "${BLUE}Documentation:${NC}"
-echo -e "  Main README:        ${YELLOW}$SCRIPT_DIR/README.md${NC}"
-echo -e "  Service Guide:      ${YELLOW}$SCRIPT_DIR/SERVICE.md${NC}"
-echo -e "  USB Gadget Guide:   ${YELLOW}$SCRIPT_DIR/USB_GADGET_FIXES.md${NC}"
-echo -e "  Plugin Development: ${YELLOW}$SCRIPT_DIR/PLUGIN_DEVELOPMENT.md${NC}"
+echo -e "  Main README:        ${YELLOW}~/ChitUI/README.md${NC}"
+echo -e "  Scripts Guide:      ${YELLOW}~/ChitUI/scripts/README.md${NC}"
+echo -e "  Plugin READMEs:     ${YELLOW}~/ChitUI/plugins/*/README.md${NC}"
 echo ""
 
 echo -e "${BLUE}Useful Commands:${NC}"
-echo -e "  Test manually:      ${YELLOW}python3 $SCRIPT_DIR/main.py${NC}"
-echo -e "  Check USB Gadget:   ${YELLOW}bash $SCRIPT_DIR/scripts/check_usb_gadget.sh${NC}"
-echo -e "  Update ChitUI:      ${YELLOW}git pull${NC}"
+echo -e "  Test manually:      ${YELLOW}cd ~/ChitUI && python3 main.py${NC}"
+echo -e "  Check USB Gadget:   ${YELLOW}cd ~/ChitUI && bash scripts/check_usb_gadget.sh${NC}"
+echo -e "  Update ChitUI:      ${YELLOW}cd ~/ChitUI && git pull${NC}"
 echo ""
 
 if [ "$SERVICE_INSTALLED" = true ]; then
-    echo -e "${GREEN}${BOLD}ChitUI Plus is now running and will start automatically on boot!${NC}"
+    echo -e "${GREEN}${BOLD}ChitUI is now running and will start automatically on boot!${NC}"
 else
-    echo -e "${YELLOW}${BOLD}To start ChitUI Plus, run: ./run.sh${NC}"
+    echo -e "${YELLOW}${BOLD}To start ChitUI, run: ./run.sh${NC}"
 fi
 
 echo ""
-echo -e "${CYAN}Thank you for installing ChitUI Plus!${NC}"
+echo -e "${CYAN}Thank you for installing ChitUI!${NC}"
 echo -e "${CYAN}Happy printing! 🖨️${NC}"
 echo ""

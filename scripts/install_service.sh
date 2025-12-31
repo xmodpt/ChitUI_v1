@@ -1,6 +1,6 @@
 #!/bin/bash
-# ChitUI Plus Service Installer
-# This script installs ChitUI Plus as a systemd service that starts automatically on boot
+# ChitUI Service Installer
+# This script installs ChitUI as a systemd service that starts automatically on boot
 
 set -e
 
@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 echo -e "${BLUE}╔══════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║     ChitUI Plus Service Installer          ║${NC}"
+echo -e "${BLUE}║     ChitUI Service Installer               ║${NC}"
 echo -e "${BLUE}╔══════════════════════════════════════════════╗${NC}"
 echo ""
 
@@ -84,7 +84,7 @@ else
 fi
 
 # Create the service file
-SERVICE_NAME="chitui-plus"
+SERVICE_NAME="chitui"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 
 echo ""
@@ -94,7 +94,7 @@ echo -e "${BLUE}Creating systemd service file...${NC}"
 TEMP_SERVICE=$(mktemp)
 cat > "$TEMP_SERVICE" << EOF
 [Unit]
-Description=ChitUI Plus - 3D Printer Management Interface
+Description=ChitUI - 3D Printer Management Interface
 After=network-online.target
 Wants=network-online.target
 
@@ -151,7 +151,7 @@ echo
 if [[ ! $REPLY =~ ^[Nn]$ ]]; then
     # Stop any existing instance
     if pgrep -f "python3.*main.py" > /dev/null; then
-        echo -e "${YELLOW}⚠ Stopping existing ChitUI Plus instances...${NC}"
+        echo -e "${YELLOW}⚠ Stopping existing ChitUI instances...${NC}"
         pkill -f "python3.*main.py" || true
         sleep 2
     fi
@@ -185,9 +185,9 @@ echo -e "${BLUE}Log Files:${NC}"
 echo -e "  Service:  ${YELLOW}$ACTUAL_HOME/.chitui/service.log${NC}"
 echo -e "  App:      ${YELLOW}$SCRIPT_DIR/chitui.log${NC}"
 echo ""
-echo -e "${BLUE}Access ChitUI Plus:${NC}"
+echo -e "${BLUE}Access ChitUI:${NC}"
 echo -e "  Local:    ${YELLOW}http://localhost:8080${NC}"
 echo -e "  Network:  ${YELLOW}http://$(hostname -I | awk '{print $1}'):8080${NC}"
 echo ""
-echo -e "${GREEN}ChitUI Plus will now start automatically on boot!${NC}"
+echo -e "${GREEN}ChitUI will now start automatically on boot!${NC}"
 echo ""

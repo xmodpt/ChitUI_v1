@@ -1,6 +1,6 @@
-# ChitUI Plus - Scripts Directory
+# ChitUI - Scripts Directory
 
-This directory contains utility scripts for ChitUI Plus installation, service management, and USB gadget configuration.
+This directory contains utility scripts for ChitUI installation, service management, and USB gadget configuration.
 
 ## Installation Scripts
 
@@ -27,7 +27,7 @@ sudo ./scripts/virtual_usb_gadget_fixed.sh
 ---
 
 ### install_service.sh
-Installs ChitUI Plus as a systemd service.
+Installs ChitUI as a systemd service.
 
 **Usage:**
 ```bash
@@ -42,16 +42,16 @@ Installs ChitUI Plus as a systemd service.
 
 **Service commands after installation:**
 ```bash
-sudo systemctl status chitui-plus    # Check status
-sudo systemctl restart chitui-plus   # Restart service
-sudo systemctl stop chitui-plus      # Stop service
-journalctl -u chitui-plus -f         # View logs
+sudo systemctl status chitui    # Check status
+sudo systemctl restart chitui   # Restart service
+sudo systemctl stop chitui      # Stop service
+journalctl -u chitui -f         # View logs
 ```
 
 ---
 
 ### uninstall_service.sh
-Removes the ChitUI Plus systemd service.
+Removes the ChitUI systemd service.
 
 **Usage:**
 ```bash
@@ -147,7 +147,7 @@ sudo ./scripts/reload_usb_with_file.sh
 ## Application Control Scripts
 
 ### restart.sh
-Restarts ChitUI Plus service.
+Restarts ChitUI service.
 
 **Usage:**
 ```bash
@@ -155,7 +155,7 @@ Restarts ChitUI Plus service.
 ```
 
 **What it does:**
-- Stops chitui-plus systemd service
+- Stops chitui systemd service
 - Waits for clean shutdown
 - Starts service again
 
