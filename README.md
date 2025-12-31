@@ -29,7 +29,7 @@ ChitUI should be installed to `~/ChitUI` for best compatibility:
 
 ```bash
 cd ~
-git clone https://github.com/yourusername/ChitUI.git ChitUI
+git clone https://github.com/xmodpt/ChitUI.git ChitUI
 cd ChitUI
 ./install.sh
 ```
@@ -39,7 +39,7 @@ cd ChitUI
 1. **Clone the repository:**
    ```bash
    cd ~
-   git clone <repository-url> ChitUI
+   git clone https://github.com/xmodpt/ChitUI.git ChitUI
    cd ChitUI
    ```
 
