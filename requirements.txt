@@ -1,0 +1,25 @@
+# Core Web Framework
+Flask==3.0.0
+Flask-SocketIO==5.3.5
+Flask-CORS==4.0.0
+python-socketio==5.10.0
+Werkzeug==3.0.1
+
+# WebSocket Client (for printer communication)
+websocket-client==1.7.0
+
+# Logging
+loguru==0.7.2
+
+# HTTP Requests
+requests==2.31.0
+
+# Authentication & Security
+PyJWT==2.8.0
+
+# Optional: Camera Support
+# Uncomment if you want IP camera functionality
+# opencv-python-headless==4.9.0.80
+
+# Optional: Raspberry Pi GPIO (only needed on Raspberry Pi)
+# RPi.GPIO==0.7.1
