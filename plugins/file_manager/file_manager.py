@@ -47,6 +47,16 @@ class FileManagerPlugin(ChitUIPlugin):
 
         logger.info("File Manager Plugin initialized")
 
+    def get_ui_integration(self):
+        """Return UI integration configuration"""
+        return {
+            'type': 'card',
+            'location': 'main',
+            'icon': 'bi-folder2-open',
+            'title': 'Files',
+            'template': 'file_manager.html'
+        }
+
     def on_startup(self, app, socketio, **kwargs):
         """Initialize plugin on startup"""
         self.app = app
@@ -102,7 +112,9 @@ class FileManagerPlugin(ChitUIPlugin):
 
     def get_blueprint(self):
         """Return Flask Blueprint for file manager routes"""
-        bp = Blueprint('file_manager', __name__)
+        bp = Blueprint('file_manager', __name__,
+                      static_folder='static',
+                      static_url_path='/static')
 
         @bp.route('/upload', methods=['GET', 'POST'])
         def upload_file():
