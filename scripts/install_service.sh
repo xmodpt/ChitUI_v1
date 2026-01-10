@@ -84,7 +84,7 @@ else
 fi
 
 # Create the service file
-SERVICE_NAME="chitui-plus"
+SERVICE_NAME="chitui"
 SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 
 echo ""
