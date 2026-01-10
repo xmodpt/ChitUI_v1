@@ -95,7 +95,7 @@ class Plugin(ChitUIPlugin):
     def get_author(self):
         return "ChitUI"
 
-    def on_startup(self, app, socketio):
+    def on_startup(self, app, socketio, **kwargs):
         """Initialize the plugin"""
         self.socketio = socketio
 

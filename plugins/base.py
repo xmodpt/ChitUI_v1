@@ -119,13 +119,14 @@ class ChitUIPlugin(ABC):
         """
         return None
 
-    def on_startup(self, app, socketio):
+    def on_startup(self, app, socketio, **kwargs):
         """
         Called when plugin is loaded at app startup.
 
         Args:
             app: Flask app instance
             socketio: SocketIO instance
+            **kwargs: Additional context (e.g., printers, send_printer_cmd)
         """
         pass
 
