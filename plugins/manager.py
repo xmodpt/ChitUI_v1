@@ -103,7 +103,7 @@ class PluginManager:
 
         return discovered
 
-    def load_plugin(self, plugin_name, app, socketio):
+    def load_plugin(self, plugin_name, app, socketio, **kwargs):
         """
         Load and initialize a plugin.
 
@@ -111,6 +111,7 @@ class PluginManager:
             plugin_name: Name of the plugin directory
             app: Flask app instance
             socketio: SocketIO instance
+            **kwargs: Additional context to pass to plugin (e.g., printers, send_printer_cmd)
 
         Returns:
             Plugin instance or None
@@ -150,8 +151,8 @@ class PluginManager:
             if not plugin_instance.install_dependencies():
                 logger.warning(f"Failed to install dependencies for {plugin_name}")
 
-            # Initialize the plugin
-            plugin_instance.on_startup(app, socketio)
+            # Initialize the plugin with additional context
+            plugin_instance.on_startup(app, socketio, **kwargs)
 
             # Register SocketIO handlers
             plugin_instance.register_socket_handlers(socketio)
@@ -172,14 +173,14 @@ class PluginManager:
             traceback.print_exc()
             return None
 
-    def load_all_plugins(self, app, socketio):
-        """Load all enabled plugins"""
+    def load_all_plugins(self, app, socketio, **kwargs):
+        """Load all enabled plugins with additional context"""
         discovered = self.discover_plugins()
 
         for plugin_name, info in discovered.items():
             if info['enabled']:
                 logger.info(f"Loading plugin: {plugin_name}")
-                self.load_plugin(plugin_name, app, socketio)
+                self.load_plugin(plugin_name, app, socketio, **kwargs)
             else:
                 logger.info(f"Plugin {plugin_name} is disabled, skipping")
 

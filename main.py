@@ -1101,7 +1101,7 @@ def enable_plugin(plugin_id):
         plugin_manager.enable_plugin(plugin_id)
         # Load the plugin if not already loaded
         if plugin_id not in plugin_manager.get_all_plugins():
-            plugin_manager.load_plugin(plugin_id, app, socketio)
+            plugin_manager.load_plugin(plugin_id, app, socketio, printers=printers, send_printer_cmd=send_printer_cmd)
         return jsonify({"success": True, "message": f"Plugin {plugin_id} enabled"})
     except Exception as e:
         logger.error(f"Error enabling plugin {plugin_id}: {e}")
@@ -2620,7 +2620,7 @@ def main():
 
     # Load plugins
     logger.info("Loading plugins...")
-    plugin_manager.load_all_plugins(app, socketio)
+    plugin_manager.load_all_plugins(app, socketio, printers=printers, send_printer_cmd=send_printer_cmd)
 
     if settings.get("auto_discover", True):
         logger.info("Starting with auto-discovery enabled")

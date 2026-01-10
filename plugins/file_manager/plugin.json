@@ -1,0 +1,12 @@
+{
+  "name": "File Manager",
+  "version": "1.0.0",
+  "author": "ChitUI Team",
+  "description": "Complete file management system with upload, download, delete, and print capabilities. Supports both USB gadget and network uploads with storage monitoring.",
+  "ui_integration": {
+    "type": "card",
+    "location": "main-content",
+    "icon": "bi-folder",
+    "title": "Files"
+  }
+}
