@@ -47,6 +47,18 @@ class FileManagerPlugin(ChitUIPlugin):
 
         logger.info("File Manager Plugin initialized")
 
+    def get_name(self):
+        """Return the plugin name"""
+        return "File Manager"
+
+    def get_version(self):
+        """Return the plugin version"""
+        return "1.0.0"
+
+    def get_description(self):
+        """Return the plugin description"""
+        return "Complete file management system with upload, download, delete, and print capabilities"
+
     def get_ui_integration(self):
         """Return UI integration configuration"""
         return {
