@@ -1120,6 +1120,19 @@ def disable_plugin(plugin_id):
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+@app.route('/plugins/order', methods=['POST'])
+def set_plugin_order():
+    """Set the display order for plugins"""
+    try:
+        data = request.json
+        order_list = data.get('order', [])
+        plugin_manager.set_plugin_order(order_list)
+        return jsonify({"success": True, "message": "Plugin order updated"})
+    except Exception as e:
+        logger.error(f"Error setting plugin order: {e}")
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 @app.route('/plugins/<plugin_id>/delete', methods=['POST'])
 def delete_plugin(plugin_id):
     """Delete a plugin"""
@@ -1240,9 +1253,9 @@ def upload_plugin():
 
 @app.route('/plugins/ui', methods=['GET'])
 def get_plugin_ui():
-    """Get UI integration for all enabled plugins"""
+    """Get UI integration for all enabled plugins sorted by order"""
     ui_elements = []
-    for plugin_name, plugin in plugin_manager.get_enabled_plugins().items():
+    for plugin_name, plugin in plugin_manager.get_enabled_plugins(sorted_by_order=True).items():
         ui_config = plugin.get_ui_integration()
         if ui_config:
             template_file = ui_config.get('template')

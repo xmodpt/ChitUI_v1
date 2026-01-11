@@ -24,6 +24,7 @@ class PluginManager:
         self.plugins_dir = plugins_dir
         self.plugins = {}
         self.enabled_plugins = {}
+        self.plugin_order = {}
         self.settings_file = os.path.expanduser('~/.chitui/plugin_settings.json')
 
         # Ensure plugins directory exists
@@ -33,23 +34,36 @@ class PluginManager:
         self.load_plugin_settings()
 
     def load_plugin_settings(self):
-        """Load plugin enable/disable settings from file"""
+        """Load plugin settings from file"""
         if os.path.exists(self.settings_file):
             try:
                 with open(self.settings_file, 'r') as f:
-                    self.enabled_plugins = json.load(f)
+                    settings = json.load(f)
+                    # Handle old format (just enabled plugins dict)
+                    if isinstance(settings, dict) and 'enabled' not in settings:
+                        self.enabled_plugins = settings
+                        self.plugin_order = {}
+                    else:
+                        self.enabled_plugins = settings.get('enabled', {})
+                        self.plugin_order = settings.get('order', {})
             except Exception as e:
                 logger.error(f"Failed to load plugin settings: {e}")
                 self.enabled_plugins = {}
+                self.plugin_order = {}
         else:
             self.enabled_plugins = {}
+            self.plugin_order = {}
 
     def save_plugin_settings(self):
-        """Save plugin enable/disable settings to file"""
+        """Save plugin settings to file"""
         try:
             os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
+            settings = {
+                'enabled': self.enabled_plugins,
+                'order': self.plugin_order
+            }
             with open(self.settings_file, 'w') as f:
-                json.dump(self.enabled_plugins, f, indent=2)
+                json.dump(settings, f, indent=2)
         except Exception as e:
             logger.error(f"Failed to save plugin settings: {e}")
 
@@ -206,13 +220,35 @@ class PluginManager:
         """Get all loaded plugins (including disabled ones)"""
         return self.plugins
 
-    def get_enabled_plugins(self):
-        """Get only enabled and loaded plugins"""
+    def get_enabled_plugins(self, sorted_by_order=False):
+        """Get only enabled and loaded plugins, optionally sorted by order"""
         enabled = {}
         for plugin_name, plugin in self.plugins.items():
             if self.enabled_plugins.get(plugin_name, True):
                 enabled[plugin_name] = plugin
+
+        if sorted_by_order:
+            # Sort by order (plugins without order go to end)
+            sorted_items = sorted(
+                enabled.items(),
+                key=lambda x: self.plugin_order.get(x[0], 9999)
+            )
+            return dict(sorted_items)
+
         return enabled
+
+    def set_plugin_order(self, order_list):
+        """Set the display order for plugins
+
+        Args:
+            order_list: List of plugin names in desired order
+        """
+        self.plugin_order = {name: idx for idx, name in enumerate(order_list)}
+        self.save_plugin_settings()
+
+    def get_plugin_order(self):
+        """Get the current plugin order"""
+        return self.plugin_order
 
     def get_plugin_info(self):
         """Get information about all discovered plugins"""
