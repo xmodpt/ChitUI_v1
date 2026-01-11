@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "author": "ChitUI Team",
   "description": "Advanced file management system with thumbnail support for .goo and .ctb files. Includes upload, download, delete, print capabilities, and automatic thumbnail extraction and display.",
+  "dependencies": ["Pillow"],
   "ui_integration": {
     "type": "card",
     "location": "main-content",

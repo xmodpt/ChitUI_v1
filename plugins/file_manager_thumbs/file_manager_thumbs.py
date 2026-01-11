@@ -344,6 +344,10 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         """Return the plugin description"""
         return "Complete file management system with thumbnail support for .goo and .ctb files"
 
+    def get_dependencies(self):
+        """Return list of required dependencies"""
+        return ['Pillow']
+
     def get_ui_integration(self):
         """Return UI integration configuration"""
         return {
