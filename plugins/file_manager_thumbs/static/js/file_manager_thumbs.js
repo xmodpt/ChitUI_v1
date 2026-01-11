@@ -706,9 +706,42 @@
       btnScanThumbnails.disabled = true;
       btnScanThumbnails.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Extracting...';
 
-      // Call scan endpoint
+      // Collect file list from the file manager table
+      const fileList = [];
+      const fileRows = document.querySelectorAll('#fileManagerBody tr[data-file]');
+
+      fileRows.forEach(row => {
+        const dataFile = row.getAttribute('data-file');
+        if (dataFile) {
+          // Extract filename from the path (e.g., /usb/file.goo -> file.goo)
+          const filename = dataFile.split('/').pop();
+
+          // Only include .goo and .ctb files
+          if (filename.toLowerCase().endsWith('.goo') || filename.toLowerCase().endsWith('.ctb')) {
+            fileList.push({
+              filename: filename,
+              path: dataFile
+            });
+          }
+        }
+      });
+
+      // Get current printer ID from the printer selector
+      const printerSelect = document.getElementById('uploadPrinter');
+      const printerId = printerSelect ? printerSelect.value : null;
+
+      console.log(`Found ${fileList.length} files to process, printer: ${printerId}`);
+
+      // Call scan endpoint with file list and printer info
       fetch('/plugin/file_manager_thumbs/scan-thumbnails', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          files: fileList,
+          printer_id: printerId
+        })
       })
         .then(response => response.json())
         .then(data => {
@@ -719,7 +752,7 @@
             msg += `Total files: ${data.total}\n`;
             msg += `Extracted: ${data.extracted}\n`;
             msg += `Failed: ${data.failed}\n\n`;
-            msg += `Storage location: ${data.upload_folder || 'Unknown'}\n`;
+            msg += `Cache directory: ${data.cache_dir || 'Unknown'}\n`;
             msg += `USB Gadget mode: ${data.usb_gadget_mode ? 'Enabled' : 'Disabled'}`;
 
             alert(msg);

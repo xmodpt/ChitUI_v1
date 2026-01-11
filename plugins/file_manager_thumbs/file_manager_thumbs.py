@@ -320,6 +320,7 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         self.DATA_FOLDER = None
         self.UPLOAD_FOLDER = None
         self.USB_GADGET_FOLDER = '/mnt/usb_share'
+        self.THUMBNAIL_CACHE_DIR = None
         self.ALLOWED_EXTENSIONS = {'ctb', 'goo', 'prz'}
         self.USE_USB_GADGET = False
         self.USB_AUTO_REFRESH = False
@@ -371,6 +372,11 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         self.ENABLE_USB_GADGET = os.environ.get('ENABLE_USB_GADGET', 'true').lower() not in ['0', 'false', 'no', 'off']
         self.USB_AUTO_REFRESH = os.environ.get('USB_AUTO_REFRESH', 'false').lower() not in ['0', 'false', 'no', 'off']
 
+        # Set up thumbnail cache directory
+        self.THUMBNAIL_CACHE_DIR = os.path.join(self.DATA_FOLDER, 'thumbnail_cache')
+        os.makedirs(self.THUMBNAIL_CACHE_DIR, exist_ok=True)
+        logger.info(f"Thumbnail cache directory: {self.THUMBNAIL_CACHE_DIR}")
+
         # Check if USB gadget is available and writable
         self._check_usb_gadget()
 
@@ -411,6 +417,84 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
             logger.warning(f"USB gadget folder not writable: {e}")
             self.USE_USB_GADGET = False
 
+    def _download_file_from_printer(self, printer_ip: str, file_path: str, local_path: str) -> bool:
+        """Download a file from the printer to local storage for thumbnail extraction."""
+        try:
+            # Construct the download URL based on file location
+            # file_path format: /usb/filename.goo or /local/filename.goo
+            if file_path.startswith('/usb/'):
+                storage_type = 'usb'
+                filename = file_path.replace('/usb/', '')
+            elif file_path.startswith('/local/'):
+                storage_type = 'local'
+                filename = file_path.replace('/local/', '')
+            else:
+                logger.error(f"Unknown file path format: {file_path}")
+                return False
+
+            # Try different download URL patterns based on printer API
+            url_patterns = [
+                f'http://{printer_ip}:3030/download/{storage_type}/{filename}',
+                f'http://{printer_ip}:3030/file/{storage_type}/{filename}',
+                f'http://{printer_ip}:3030/files/{storage_type}/{filename}',
+            ]
+
+            for url in url_patterns:
+                try:
+                    logger.debug(f"Trying download URL: {url}")
+                    response = requests.get(url, timeout=30, stream=True)
+
+                    if response.status_code == 200:
+                        # Save the file
+                        with open(local_path, 'wb') as f:
+                            for chunk in response.iter_content(chunk_size=8192):
+                                f.write(chunk)
+
+                        logger.info(f"Downloaded {filename} from printer to {local_path}")
+                        return True
+                    elif response.status_code == 404:
+                        logger.debug(f"URL returned 404: {url}")
+                        continue
+                    else:
+                        logger.warning(f"Download returned status {response.status_code}: {url}")
+                        continue
+
+                except requests.exceptions.RequestException as e:
+                    logger.debug(f"Download attempt failed for {url}: {e}")
+                    continue
+
+            logger.error(f"All download attempts failed for {file_path}")
+            return False
+
+        except Exception as e:
+            logger.error(f"Error downloading file from printer: {e}")
+            return False
+
+    def _extract_thumbnail_to_cache(self, filepath: str, base_filename: str) -> bool:
+        """Extract thumbnail from a file and save to cache directory."""
+        try:
+            file_path = Path(filepath)
+            if not file_path.exists():
+                logger.error(f"File not found for thumbnail extraction: {filepath}")
+                return False
+
+            # Determine file type and use appropriate extractor
+            if file_path.suffix.lower() == '.goo':
+                extractor = GooThumbnailExtractor(str(file_path))
+            elif file_path.suffix.lower() == '.ctb':
+                extractor = CtbThumbnailExtractor(str(file_path))
+            else:
+                logger.warning(f"Unsupported file type for thumbnails: {file_path.suffix}")
+                return False
+
+            # Extract to cache directory
+            extractor.extract_thumbnails(output_dir=self.THUMBNAIL_CACHE_DIR)
+            logger.info(f"Extracted thumbnails to cache for {base_filename}")
+            return True
+        except Exception as e:
+            logger.error(f"Error extracting thumbnail to cache: {e}")
+            return False
+
     def _extract_thumbnail_for_file(self, filename: str) -> bool:
         """Extract thumbnail for a specific file (GOO or CTB)."""
         filepath = Path(self.UPLOAD_FOLDER) / filename
@@ -419,19 +503,41 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
             return False
 
         try:
-            # Determine file type and use appropriate extractor
-            if filepath.suffix.lower() == '.goo':
-                extractor = GooThumbnailExtractor(str(filepath))
-            elif filepath.suffix.lower() == '.ctb':
-                extractor = CtbThumbnailExtractor(str(filepath))
-            else:
-                return False
-
-            extractor.extract_thumbnails(output_dir=str(filepath.parent))
-            return True
+            # Extract to cache instead of upload folder
+            return self._extract_thumbnail_to_cache(str(filepath), filename)
         except Exception as e:
             logger.error(f"Error extracting thumbnail: {e}")
             return False
+
+    def _extract_thumbnail_from_printer_file(self, printer_ip: str, file_path: str, filename: str) -> bool:
+        """Download file from printer, extract thumbnail, and clean up."""
+        temp_file = None
+        try:
+            # Create temporary file for download
+            temp_file = os.path.join(self.THUMBNAIL_CACHE_DIR, f".temp_{filename}")
+
+            # Download file from printer
+            logger.info(f"Downloading {filename} from printer for thumbnail extraction...")
+            if not self._download_file_from_printer(printer_ip, file_path, temp_file):
+                logger.error(f"Failed to download {filename} from printer")
+                return False
+
+            # Extract thumbnail to cache
+            success = self._extract_thumbnail_to_cache(temp_file, filename)
+
+            return success
+
+        except Exception as e:
+            logger.error(f"Error extracting thumbnail from printer file: {e}")
+            return False
+        finally:
+            # Clean up temporary file
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                    logger.debug(f"Cleaned up temporary file: {temp_file}")
+                except Exception as e:
+                    logger.warning(f"Failed to clean up temp file {temp_file}: {e}")
 
     def _scan_and_extract_thumbnails(self) -> Dict[str, bool]:
         """Scan upload folder and extract thumbnails for all GOO/CTB files."""
@@ -448,12 +554,12 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
             if not filename.lower().endswith(('.goo', '.ctb')):
                 continue
 
-            # Skip if thumbnail already exists
+            # Skip if thumbnail already exists in cache
             base_name = os.path.splitext(filename)[0]
-            big_thumb = os.path.join(self.UPLOAD_FOLDER, f"{base_name}_big.png")
+            big_thumb = os.path.join(self.THUMBNAIL_CACHE_DIR, f"{base_name}_big.png")
 
             if os.path.exists(big_thumb):
-                logger.debug(f"Thumbnail already exists for {filename}")
+                logger.debug(f"Thumbnail already exists in cache for {filename}")
                 results[filename] = True
                 continue
 
@@ -549,14 +655,14 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
                         file.save(filepath)
                         logger.info(f"File '{filename}' saved successfully!")
 
-                        # Extract thumbnail for .goo and .ctb files
+                        # Extract thumbnail to cache for .goo and .ctb files BEFORE uploading to printer
                         if filename.lower().endswith(('.goo', '.ctb')):
-                            logger.info(f"Extracting thumbnail for {filename}...")
-                            thumbnail_success = self._extract_thumbnail_for_file(filename)
+                            logger.info(f"Extracting thumbnail to cache for {filename}...")
+                            thumbnail_success = self._extract_thumbnail_to_cache(filepath, filename)
                             if thumbnail_success:
-                                logger.info(f"Thumbnail extracted successfully for {filename}")
+                                logger.info(f"Thumbnail extracted to cache for {filename}")
                             else:
-                                logger.warning(f"Failed to extract thumbnail for {filename}")
+                                logger.warning(f"Failed to extract thumbnail to cache for {filename}")
 
                         # Check destination: if user selected USB and printer is configured for USB, process accordingly
                         if destination == 'usb' and (self.USE_USB_GADGET or usb_device_type == 'virtual'):
@@ -717,30 +823,81 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
 
         @bp.route('/thumbnails/<filename>')
         def serve_thumbnail(filename):
-            """Serve thumbnail images"""
-            return send_from_directory(self.UPLOAD_FOLDER, filename)
+            """Serve thumbnail images from cache"""
+            # Check if thumbnail exists in cache
+            cache_path = os.path.join(self.THUMBNAIL_CACHE_DIR, filename)
+            if os.path.exists(cache_path):
+                return send_from_directory(self.THUMBNAIL_CACHE_DIR, filename)
+
+            # Thumbnail not in cache - return 404
+            # The frontend should trigger extraction via the scan button
+            logger.warning(f"Thumbnail not found in cache: {filename}")
+            return Response("Thumbnail not found. Use 'Extract Thumbnails' button to generate.",
+                          status=404, mimetype='text/plain')
 
         @bp.route('/scan-thumbnails', methods=['POST'])
         def scan_thumbnails():
             """Scan and extract thumbnails from existing files"""
             try:
+                # Get file list and printer info from request
+                data = request.get_json() or {}
+                file_list = data.get('files', [])  # List of {filename, path, printer_ip}
+                printer_id = data.get('printer_id')
+
                 logger.info(f"=== THUMBNAIL SCAN DEBUG ===")
+                logger.info(f"Thumbnail cache: {self.THUMBNAIL_CACHE_DIR}")
                 logger.info(f"Upload folder: {self.UPLOAD_FOLDER}")
                 logger.info(f"USB Gadget mode: {self.USE_USB_GADGET}")
-                logger.info(f"USB Gadget folder: {self.USB_GADGET_FOLDER}")
-                logger.info(f"Folder exists: {os.path.exists(self.UPLOAD_FOLDER) if self.UPLOAD_FOLDER else 'N/A'}")
+                logger.info(f"Received {len(file_list)} files to process")
 
-                results = self._scan_and_extract_thumbnails()
+                results = {}
+
+                # If file list provided, process those files from printer
+                if file_list and printer_id and printer_id in self.printers:
+                    printer_ip = self.printers[printer_id]['ip']
+                    logger.info(f"Processing files from printer {printer_ip}")
+
+                    for file_info in file_list:
+                        filename = file_info.get('filename')
+                        file_path = file_info.get('path')
+
+                        if not filename or not file_path:
+                            continue
+
+                        # Check if already in cache
+                        base_name = os.path.splitext(filename)[0]
+                        big_thumb = os.path.join(self.THUMBNAIL_CACHE_DIR, f"{base_name}_big.png")
+
+                        if os.path.exists(big_thumb):
+                            logger.debug(f"Thumbnail already in cache for {filename}")
+                            results[filename] = True
+                            continue
+
+                        # Extract from printer file
+                        logger.info(f"Extracting thumbnail from printer file: {filename}")
+                        success = self._extract_thumbnail_from_printer_file(printer_ip, file_path, filename)
+                        results[filename] = success
+
+                        if success:
+                            logger.info(f"✓ Thumbnail extracted from printer for {filename}")
+                        else:
+                            logger.warning(f"✗ Failed to extract thumbnail from printer for {filename}")
+
+                # Also scan local upload folder
+                local_results = self._scan_and_extract_thumbnails()
+                results.update(local_results)
+
                 total = len(results)
-                success = sum(1 for v in results.values() if v)
+                success_count = sum(1 for v in results.values() if v)
 
-                logger.info(f"Scan complete: {success}/{total} thumbnails extracted")
+                logger.info(f"Scan complete: {success_count}/{total} thumbnails extracted")
 
                 return jsonify({
                     "success": True,
                     "total": total,
-                    "extracted": success,
-                    "failed": total - success,
+                    "extracted": success_count,
+                    "failed": total - success_count,
+                    "cache_dir": self.THUMBNAIL_CACHE_DIR,
                     "upload_folder": self.UPLOAD_FOLDER,
                     "usb_gadget_mode": self.USE_USB_GADGET,
                     "results": results
@@ -765,6 +922,22 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
 
             printer_id = data['id']
             file_path = data['data']
+
+            # Extract filename from path for cache cleanup
+            filename = os.path.basename(file_path)
+            base_name = os.path.splitext(filename)[0]
+
+            # Clean up cached thumbnails
+            small_thumb = os.path.join(self.THUMBNAIL_CACHE_DIR, f"{base_name}_small.png")
+            big_thumb = os.path.join(self.THUMBNAIL_CACHE_DIR, f"{base_name}_big.png")
+
+            for thumb_path in [small_thumb, big_thumb]:
+                if os.path.exists(thumb_path):
+                    try:
+                        os.remove(thumb_path)
+                        logger.info(f"Deleted cached thumbnail: {thumb_path}")
+                    except Exception as e:
+                        logger.warning(f"Failed to delete cached thumbnail {thumb_path}: {e}")
 
             # Check if this is a virtual USB gadget and file is on USB
             if printer_id in self.printers:
