@@ -47,7 +47,7 @@ class Plugin(ChitUIPlugin):
         """Require psutil for system monitoring"""
         return ["psutil"]
 
-    def on_startup(self, app, socketio):
+    def on_startup(self, app, socketio, **kwargs):
         """Initialize the plugin"""
         self.socketio = socketio
         self.app = app

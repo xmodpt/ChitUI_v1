@@ -211,7 +211,7 @@ class Plugin(ChitUIPlugin):
         except Exception as e:
             logger.error(f"Error saving camera configs: {e}")
 
-    def on_startup(self, app, socketio):
+    def on_startup(self, app, socketio, **kwargs):
         """Initialize plugin on startup"""
         logger.info(f"{self.get_name()} plugin starting...")
 

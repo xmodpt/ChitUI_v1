@@ -238,7 +238,7 @@ class Plugin(ChitUIPlugin):
             'gpio_available': GPIO_AVAILABLE
         }
 
-    def on_startup(self, app, socketio):
+    def on_startup(self, app, socketio, **kwargs):
         """Called when plugin is loaded"""
         self.socketio = socketio
 

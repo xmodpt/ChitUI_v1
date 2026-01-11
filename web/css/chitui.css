@@ -1007,3 +1007,63 @@ body {
     font-size: 0.45rem;
   }
 }
+
+/* ============================================================
+   PLUGIN DRAG AND DROP STYLES (Settings Page)
+   ============================================================ */
+
+/* Plugin settings item base styles for draggable behavior */
+.plugin-settings-item {
+  cursor: move;
+  cursor: grab;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  position: relative;
+}
+
+.plugin-settings-item:active {
+  cursor: grabbing;
+}
+
+.plugin-settings-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Visual feedback during drag */
+.plugin-settings-item.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drop zone indicators */
+.plugin-settings-item.drag-over-top {
+  border-top: 3px solid var(--accent-color);
+  padding-top: calc(1rem - 3px);
+}
+
+.plugin-settings-item.drag-over-bottom {
+  border-bottom: 3px solid var(--accent-color);
+  padding-bottom: calc(1rem - 3px);
+}
+
+/* Add a subtle grab indicator icon when hovering over plugin settings items */
+.plugin-settings-item .card-body::before {
+  content: '\F32E';
+  font-family: 'bootstrap-icons';
+  position: absolute;
+  left: 0.5rem;
+  top: 1.5rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--bs-secondary-color);
+  font-size: 1.5rem;
+}
+
+.plugin-settings-item:hover .card-body::before {
+  opacity: 0.3;
+}
+
+.plugin-settings-item:active .card-body::before {
+  opacity: 0.5;
+}

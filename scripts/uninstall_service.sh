@@ -16,14 +16,27 @@ echo -e "${BLUE}║     ChitUI Plus Service Uninstaller        ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 
-SERVICE_NAME="chitui-plus"
-SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+# Check for both possible service names (chitui and chitui-plus)
+SERVICE_NAME=""
+SERVICE_FILE=""
 
-# Check if service exists
-if [ ! -f "$SERVICE_FILE" ]; then
-    echo -e "${YELLOW}⚠ Service is not installed${NC}"
+if [ -f "/etc/systemd/system/chitui.service" ]; then
+    SERVICE_NAME="chitui"
+    SERVICE_FILE="/etc/systemd/system/chitui.service"
+    echo -e "${GREEN}✓${NC} Found service: chitui.service"
+elif [ -f "/etc/systemd/system/chitui-plus.service" ]; then
+    SERVICE_NAME="chitui-plus"
+    SERVICE_FILE="/etc/systemd/system/chitui-plus.service"
+    echo -e "${GREEN}✓${NC} Found service: chitui-plus.service"
+else
+    echo -e "${YELLOW}⚠ No ChitUI service found${NC}"
+    echo -e "${BLUE}Checked for:${NC}"
+    echo -e "  - /etc/systemd/system/chitui.service"
+    echo -e "  - /etc/systemd/system/chitui-plus.service"
     exit 0
 fi
+
+echo ""
 
 echo -e "${YELLOW}This will remove the ChitUI Plus service from your system.${NC}"
 echo -e "${YELLOW}The application files will NOT be deleted.${NC}"
