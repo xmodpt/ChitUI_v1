@@ -460,7 +460,10 @@
         const fieldValueContent = cells[1].innerHTML;
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = fieldValueContent;
-        const filename = tempDiv.childNodes[0]?.textContent || '';
+        const fullPath = tempDiv.childNodes[0]?.textContent || '';
+
+        // Extract just the filename without path (e.g., "/usb/file.goo" -> "file.goo")
+        const filename = fullPath.split('/').pop();
 
         // Create thumbnail cell
         const thumbnailCell = document.createElement('td');
@@ -471,6 +474,7 @@
         if (fileExt === 'goo' || fileExt === 'ctb') {
           const baseName = filename.substring(0, filename.lastIndexOf('.'));
           const thumbnailUrl = `/plugin/file_manager_thumbs/thumbnails/${baseName}_big.png`;
+          console.log(`Loading thumbnail for ${filename}: ${thumbnailUrl}`);
 
           // Create thumbnail image
           const img = document.createElement('img');
@@ -493,6 +497,7 @@
 
           // Handle thumbnail load error
           img.onerror = function() {
+            console.log(`Failed to load thumbnail: ${thumbnailUrl}`);
             // Replace with placeholder if thumbnail doesn't exist
             const placeholder = document.createElement('div');
             placeholder.classList.add('thumbnail-placeholder');
