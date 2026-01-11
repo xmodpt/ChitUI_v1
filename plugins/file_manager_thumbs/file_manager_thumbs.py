@@ -623,12 +623,13 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
                     upload_id = form_data.get('upload_id', str(uuid.uuid4()))
                     filename = secure_filename(file.filename)
 
-                    # Determine upload path based on printer's USB device type
+                    # Determine upload path based on printer's USB device type and destination
                     printer_id = form_data['printer']
                     usb_device_type = self.printers[printer_id].get('usb_device_type', 'physical')
 
-                    # For virtual USB gadget, always use /mnt/usb_share
+                    # Determine upload folder based on destination
                     if destination == 'usb' and usb_device_type == 'virtual':
+                        # For virtual USB gadget uploads, use the USB gadget mount point
                         upload_folder = self.USB_GADGET_FOLDER
                         # Verify mount point is available and writable
                         if not os.path.exists(upload_folder):
@@ -639,8 +640,13 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
                             logger.error(f"USB gadget folder not writable: {upload_folder}")
                             return Response('{"upload": "error", "msg": "USB mount point not writable. Check permissions."}',
                                           status=500, mimetype="application/json")
+                    elif destination == 'usb' and self.USE_USB_GADGET:
+                        # For physical USB gadget uploads
+                        upload_folder = self.USB_GADGET_FOLDER
                     else:
-                        upload_folder = self.UPLOAD_FOLDER
+                        # For local/network uploads to printer, use temporary uploads folder
+                        upload_folder = os.path.join(self.DATA_FOLDER, 'uploads')
+                        os.makedirs(upload_folder, exist_ok=True)
 
                     filepath = os.path.join(upload_folder, filename)
                     logger.info(f"Saving '{filename}' to {filepath} (upload_id: {upload_id})")
@@ -736,6 +742,14 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
                             logger.info(f"Uploading to printer '{printer['name']}' - {destination} storage...")
                             success = self._upload_file_to_printer(printer['ip'], filepath, upload_id, destination)
 
+                            # Clean up temporary file after upload (if it was saved to temp folder)
+                            if upload_folder != self.USB_GADGET_FOLDER and os.path.exists(filepath):
+                                try:
+                                    os.remove(filepath)
+                                    logger.info(f"Cleaned up temporary file: {filepath}")
+                                except Exception as cleanup_error:
+                                    logger.warning(f"Failed to clean up temporary file {filepath}: {cleanup_error}")
+
                             if success:
                                 # Emit page refresh for physical USB uploads
                                 if destination == 'usb':
@@ -766,6 +780,14 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
 
                     except Exception as e:
                         logger.error(f"Upload failed: {e}")
+                        # Clean up temporary file on error
+                        if 'filepath' in locals() and 'upload_folder' in locals():
+                            if upload_folder != self.USB_GADGET_FOLDER and os.path.exists(filepath):
+                                try:
+                                    os.remove(filepath)
+                                    logger.info(f"Cleaned up temporary file after error: {filepath}")
+                                except Exception as cleanup_error:
+                                    logger.warning(f"Failed to clean up temporary file {filepath}: {cleanup_error}")
                         return Response(f'{{"upload": "error", "msg": "Upload failed: {str(e)}", "upload_id": "{upload_id}"}}',
                                       status=500, mimetype="application/json")
                 finally:
