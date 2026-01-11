@@ -1009,66 +1009,61 @@ body {
 }
 
 /* ============================================================
-   PLUGIN DRAG AND DROP STYLES
+   PLUGIN DRAG AND DROP STYLES (Settings Page)
    ============================================================ */
 
-/* Plugin card base styles for draggable behavior */
-.plugin-card {
+/* Plugin settings item base styles for draggable behavior */
+.plugin-settings-item {
   cursor: move;
   cursor: grab;
   transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
   user-select: none;
+  position: relative;
 }
 
-.plugin-card:active {
+.plugin-settings-item:active {
   cursor: grabbing;
 }
 
-.plugin-card:hover {
+.plugin-settings-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Visual feedback during drag */
-.plugin-card.dragging {
+.plugin-settings-item.dragging {
   opacity: 0.4;
   cursor: grabbing;
 }
 
 /* Drop zone indicators */
-.plugin-card.drag-over-top {
+.plugin-settings-item.drag-over-top {
   border-top: 3px solid var(--accent-color);
   padding-top: calc(1rem - 3px);
 }
 
-.plugin-card.drag-over-bottom {
+.plugin-settings-item.drag-over-bottom {
   border-bottom: 3px solid var(--accent-color);
   padding-bottom: calc(1rem - 3px);
 }
 
-/* Smooth transitions for reordering */
-.plugin-card {
-  position: relative;
-}
-
-/* Add a subtle grab indicator icon when hovering over card headers */
-.plugin-card .card-header::after {
+/* Add a subtle grab indicator icon when hovering over plugin settings items */
+.plugin-settings-item .card-body::before {
   content: '\F32E';
   font-family: 'bootstrap-icons';
   position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 0.5rem;
+  top: 1.5rem;
   opacity: 0;
   transition: opacity 0.2s;
   color: var(--bs-secondary-color);
-  font-size: 1.2rem;
+  font-size: 1.5rem;
 }
 
-.plugin-card:hover .card-header::after {
+.plugin-settings-item:hover .card-body::before {
+  opacity: 0.3;
+}
+
+.plugin-settings-item:active .card-body::before {
   opacity: 0.5;
-}
-
-.plugin-card:active .card-header::after {
-  opacity: 0.8;
 }

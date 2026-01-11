@@ -93,15 +93,8 @@ function injectCard(plugin) {
   const pluginDiv = document.createElement('div');
   pluginDiv.id = `plugin-${plugin.plugin_id}`;
   pluginDiv.className = 'plugin-card';
-  pluginDiv.setAttribute('draggable', 'true');
   pluginDiv.setAttribute('data-plugin-id', plugin.plugin_id);
   pluginDiv.innerHTML = plugin.html;
-
-  // Add drag event listeners for reordering
-  pluginDiv.addEventListener('dragstart', handleDragStart);
-  pluginDiv.addEventListener('dragover', handleDragOver);
-  pluginDiv.addEventListener('drop', handleDrop);
-  pluginDiv.addEventListener('dragend', handleDragEnd);
 
   container.appendChild(pluginDiv);
 
@@ -394,7 +387,15 @@ function renderPluginManager() {
 
     plugins.forEach(plugin => {
       const card = document.createElement('div');
-      card.className = 'card mb-3';
+      card.className = 'card mb-3 plugin-settings-item';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-plugin-id', plugin.id);
+
+      // Add drag event listeners
+      card.addEventListener('dragstart', handleSettingsDragStart);
+      card.addEventListener('dragover', handleSettingsDragOver);
+      card.addEventListener('drop', handleSettingsDrop);
+      card.addEventListener('dragend', handleSettingsDragEnd);
 
       // Check if plugin has settings endpoint - include ip_camera
       const pluginsWithSettings = ['gpio_relay_control', 'ip_camera'];
@@ -483,30 +484,30 @@ function togglePlugin(pluginId, enabled) {
   }
 }
 
-// ============ DRAG AND DROP FOR PLUGIN REORDERING ============
+// ============ DRAG AND DROP FOR PLUGIN REORDERING (SETTINGS PAGE) ============
 
-let draggedElement = null;
+let draggedSettingsElement = null;
 
-function handleDragStart(e) {
-  draggedElement = this;
+function handleSettingsDragStart(e) {
+  draggedSettingsElement = this;
   this.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
   e.dataTransfer.setData('text/html', this.innerHTML);
 }
 
-function handleDragOver(e) {
+function handleSettingsDragOver(e) {
   if (e.preventDefault) {
     e.preventDefault();
   }
   e.dataTransfer.dropEffect = 'move';
 
   // Don't show drop indicator on the dragged element itself
-  if (this === draggedElement) {
+  if (this === draggedSettingsElement) {
     return false;
   }
 
   // Remove previous indicators from all cards
-  document.querySelectorAll('.plugin-card').forEach(card => {
+  document.querySelectorAll('.plugin-settings-item').forEach(card => {
     card.classList.remove('drag-over-top', 'drag-over-bottom');
   });
 
@@ -522,27 +523,27 @@ function handleDragOver(e) {
   return false;
 }
 
-function handleDrop(e) {
+function handleSettingsDrop(e) {
   if (e.stopPropagation) {
     e.stopPropagation();
   }
 
   // Don't drop on itself
-  if (draggedElement !== this) {
+  if (draggedSettingsElement !== this) {
     // Determine drop position
     const rect = this.getBoundingClientRect();
     const midpoint = rect.top + rect.height / 2;
 
     if (e.clientY < midpoint) {
       // Insert before
-      this.parentNode.insertBefore(draggedElement, this);
+      this.parentNode.insertBefore(draggedSettingsElement, this);
     } else {
       // Insert after
-      this.parentNode.insertBefore(draggedElement, this.nextSibling);
+      this.parentNode.insertBefore(draggedSettingsElement, this.nextSibling);
     }
 
     // Save new order
-    savePluginOrder();
+    savePluginOrderFromSettings();
   }
 
   // Remove visual indicators
@@ -551,18 +552,18 @@ function handleDrop(e) {
   return false;
 }
 
-function handleDragEnd(e) {
+function handleSettingsDragEnd(e) {
   this.classList.remove('dragging');
 
   // Remove all visual indicators
-  document.querySelectorAll('.plugin-card').forEach(card => {
+  document.querySelectorAll('.plugin-settings-item').forEach(card => {
     card.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
   });
 }
 
-function savePluginOrder() {
-  const container = document.querySelector('.app-content');
-  const pluginCards = container.querySelectorAll('.plugin-card');
+function savePluginOrderFromSettings() {
+  const container = document.getElementById('pluginManagerList');
+  const pluginCards = container.querySelectorAll('.plugin-settings-item');
   const order = Array.from(pluginCards).map(card => card.getAttribute('data-plugin-id'));
 
   console.log('Saving plugin order:', order);
