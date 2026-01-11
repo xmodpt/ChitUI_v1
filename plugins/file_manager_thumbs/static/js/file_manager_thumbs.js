@@ -646,7 +646,14 @@
           console.log('Thumbnail scan results:', data);
 
           if (data.success) {
-            alert(`Thumbnails extracted!\n\nTotal files: ${data.total}\nExtracted: ${data.extracted}\nFailed: ${data.failed}`);
+            let msg = `Thumbnails extracted!\n\n`;
+            msg += `Total files: ${data.total}\n`;
+            msg += `Extracted: ${data.extracted}\n`;
+            msg += `Failed: ${data.failed}\n\n`;
+            msg += `Storage location: ${data.upload_folder || 'Unknown'}\n`;
+            msg += `USB Gadget mode: ${data.usb_gadget_mode ? 'Enabled' : 'Disabled'}`;
+
+            alert(msg);
 
             // Refresh file list to show new thumbnails
             setTimeout(() => {

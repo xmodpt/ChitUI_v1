@@ -724,19 +724,31 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         def scan_thumbnails():
             """Scan and extract thumbnails from existing files"""
             try:
+                logger.info(f"=== THUMBNAIL SCAN DEBUG ===")
+                logger.info(f"Upload folder: {self.UPLOAD_FOLDER}")
+                logger.info(f"USB Gadget mode: {self.USE_USB_GADGET}")
+                logger.info(f"USB Gadget folder: {self.USB_GADGET_FOLDER}")
+                logger.info(f"Folder exists: {os.path.exists(self.UPLOAD_FOLDER) if self.UPLOAD_FOLDER else 'N/A'}")
+
                 results = self._scan_and_extract_thumbnails()
                 total = len(results)
                 success = sum(1 for v in results.values() if v)
+
+                logger.info(f"Scan complete: {success}/{total} thumbnails extracted")
 
                 return jsonify({
                     "success": True,
                     "total": total,
                     "extracted": success,
                     "failed": total - success,
+                    "upload_folder": self.UPLOAD_FOLDER,
+                    "usb_gadget_mode": self.USE_USB_GADGET,
                     "results": results
                 })
             except Exception as e:
                 logger.error(f"Error scanning thumbnails: {e}")
+                import traceback
+                traceback.print_exc()
                 return jsonify({
                     "success": False,
                     "message": str(e)
