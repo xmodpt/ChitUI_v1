@@ -1149,8 +1149,3 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         except Exception as e:
             logger.error(f"Error deleting file from mount point: {e}")
             return False
-
-
-# Plugin entry point
-def setup(plugin_dir):
-    return FileManagerThumbsPlugin(plugin_dir)
