@@ -109,13 +109,18 @@
 
         <div class="file-manager-toolbar mb-3">
           <div class="row g-2">
-            <div class="col-md-8">
+            <div class="col-md-6">
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
                 <input type="text" class="form-control" placeholder="Search files..." id="fileSearchInput">
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+              <button type="button" class="btn btn-success w-100" id="btnScanThumbnails">
+                <i class="bi bi-images me-1"></i>Extract Thumbnails
+              </button>
+            </div>
+            <div class="col-md-3">
               <button type="button" class="btn btn-primary w-100" id="btnRefreshPI">
                 <i class="bi bi-arrow-clockwise me-1"></i>Refresh PI USB
               </button>

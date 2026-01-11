@@ -626,6 +626,48 @@
     });
   }
 
+  // Scan and extract thumbnails button
+  const btnScanThumbnails = document.getElementById('btnScanThumbnails');
+  if (btnScanThumbnails) {
+    btnScanThumbnails.addEventListener('click', () => {
+      console.log('Scanning for thumbnails...');
+
+      // Disable button and show loading state
+      const originalHTML = btnScanThumbnails.innerHTML;
+      btnScanThumbnails.disabled = true;
+      btnScanThumbnails.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Extracting...';
+
+      // Call scan endpoint
+      fetch('/plugin/file_manager_thumbs/scan-thumbnails', {
+        method: 'POST'
+      })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Thumbnail scan results:', data);
+
+          if (data.success) {
+            alert(`Thumbnails extracted!\n\nTotal files: ${data.total}\nExtracted: ${data.extracted}\nFailed: ${data.failed}`);
+
+            // Refresh file list to show new thumbnails
+            setTimeout(() => {
+              refreshFileList();
+            }, 1000);
+          } else {
+            alert(`Error: ${data.message}`);
+          }
+        })
+        .catch(error => {
+          console.error('Error scanning thumbnails:', error);
+          alert('Failed to scan thumbnails. Check console for details.');
+        })
+        .finally(() => {
+          // Reset button
+          btnScanThumbnails.disabled = false;
+          btnScanThumbnails.innerHTML = originalHTML;
+        });
+    });
+  }
+
   // ============ DRAG & DROP FILE UPLOAD ============
 
   const uploadArea = document.querySelector('.upload-area');

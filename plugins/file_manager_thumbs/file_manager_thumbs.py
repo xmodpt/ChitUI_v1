@@ -433,6 +433,42 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
             logger.error(f"Error extracting thumbnail: {e}")
             return False
 
+    def _scan_and_extract_thumbnails(self) -> Dict[str, bool]:
+        """Scan upload folder and extract thumbnails for all GOO/CTB files."""
+        results = {}
+
+        if not self.UPLOAD_FOLDER or not os.path.exists(self.UPLOAD_FOLDER):
+            logger.warning(f"Upload folder not found: {self.UPLOAD_FOLDER}")
+            return results
+
+        logger.info(f"Scanning for GOO/CTB files in {self.UPLOAD_FOLDER}...")
+
+        for filename in os.listdir(self.UPLOAD_FOLDER):
+            # Skip non-goo/ctb files
+            if not filename.lower().endswith(('.goo', '.ctb')):
+                continue
+
+            # Skip if thumbnail already exists
+            base_name = os.path.splitext(filename)[0]
+            big_thumb = os.path.join(self.UPLOAD_FOLDER, f"{base_name}_big.png")
+
+            if os.path.exists(big_thumb):
+                logger.debug(f"Thumbnail already exists for {filename}")
+                results[filename] = True
+                continue
+
+            # Extract thumbnail
+            logger.info(f"Extracting thumbnail for {filename}...")
+            success = self._extract_thumbnail_for_file(filename)
+            results[filename] = success
+
+            if success:
+                logger.info(f"✓ Thumbnail extracted for {filename}")
+            else:
+                logger.warning(f"✗ Failed to extract thumbnail for {filename}")
+
+        return results
+
     def get_blueprint(self):
         """Return Flask Blueprint for file manager routes"""
         bp = Blueprint('file_manager_thumbs', __name__,
@@ -683,6 +719,28 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
         def serve_thumbnail(filename):
             """Serve thumbnail images"""
             return send_from_directory(self.UPLOAD_FOLDER, filename)
+
+        @bp.route('/scan-thumbnails', methods=['POST'])
+        def scan_thumbnails():
+            """Scan and extract thumbnails from existing files"""
+            try:
+                results = self._scan_and_extract_thumbnails()
+                total = len(results)
+                success = sum(1 for v in results.values() if v)
+
+                return jsonify({
+                    "success": True,
+                    "total": total,
+                    "extracted": success,
+                    "failed": total - success,
+                    "results": results
+                })
+            except Exception as e:
+                logger.error(f"Error scanning thumbnails: {e}")
+                return jsonify({
+                    "success": False,
+                    "message": str(e)
+                }), 500
 
         return bp
 
