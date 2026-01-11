@@ -1098,10 +1098,11 @@ def get_plugins():
 def enable_plugin(plugin_id):
     """Enable a plugin"""
     try:
-        plugin_manager.enable_plugin(plugin_id)
         # Load the plugin if not already loaded
         if plugin_id not in plugin_manager.get_all_plugins():
             plugin_manager.load_plugin(plugin_id, app, socketio, printers=printers, send_printer_cmd=send_printer_cmd)
+        # Enable it (sets the flag and saves settings)
+        plugin_manager.enable_plugin(plugin_id)
         return jsonify({"success": True, "message": f"Plugin {plugin_id} enabled"})
     except Exception as e:
         logger.error(f"Error enabling plugin {plugin_id}: {e}")
@@ -1239,9 +1240,9 @@ def upload_plugin():
 
 @app.route('/plugins/ui', methods=['GET'])
 def get_plugin_ui():
-    """Get UI integration for all loaded plugins"""
+    """Get UI integration for all enabled plugins"""
     ui_elements = []
-    for plugin_name, plugin in plugin_manager.get_all_plugins().items():
+    for plugin_name, plugin in plugin_manager.get_enabled_plugins().items():
         ui_config = plugin.get_ui_integration()
         if ui_config:
             template_file = ui_config.get('template')

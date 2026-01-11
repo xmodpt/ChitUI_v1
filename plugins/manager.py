@@ -194,18 +194,25 @@ class PluginManager:
         self.enabled_plugins[plugin_name] = False
         self.save_plugin_settings()
 
-        # Call shutdown hook if plugin is loaded
-        if plugin_name in self.plugins:
-            self.plugins[plugin_name].on_shutdown()
-            del self.plugins[plugin_name]
+        # NOTE: We keep the plugin loaded in memory because Flask doesn't
+        # allow re-registering blueprints. The plugin stays loaded but won't
+        # appear in the UI when disabled (filtered by get_enabled_plugins).
 
     def get_plugin(self, plugin_name):
         """Get a loaded plugin instance"""
         return self.plugins.get(plugin_name)
 
     def get_all_plugins(self):
-        """Get all loaded plugins"""
+        """Get all loaded plugins (including disabled ones)"""
         return self.plugins
+
+    def get_enabled_plugins(self):
+        """Get only enabled and loaded plugins"""
+        enabled = {}
+        for plugin_name, plugin in self.plugins.items():
+            if self.enabled_plugins.get(plugin_name, True):
+                enabled[plugin_name] = plugin
+        return enabled
 
     def get_plugin_info(self):
         """Get information about all discovered plugins"""
