@@ -465,14 +465,31 @@
         // Extract just the filename without path (e.g., "/usb/file.goo" -> "file.goo")
         const filename = fullPath.split('/').pop();
 
+        // Determine file location from path
+        let location = 'Unknown';
+        if (fullPath.startsWith('/usb/')) {
+          location = 'USB';
+        } else if (fullPath.startsWith('/local/')) {
+          location = 'Local';
+        }
+
+        // Try to extract file size from the original row (if available)
+        let fileSize = '--';
+        const sizeMatch = fieldValueContent.match(/(\d+(?:\.\d+)?)\s*(MB|KB|GB)/i);
+        if (sizeMatch) {
+          fileSize = sizeMatch[1] + ' ' + sizeMatch[2];
+        }
+
+        // Extract file extension and base name (needed for status badge)
+        const fileExt = filename.toLowerCase().split('.').pop();
+        const baseName = filename.substring(0, filename.lastIndexOf('.')) || filename;
+
         // Create thumbnail cell
         const thumbnailCell = document.createElement('td');
         thumbnailCell.classList.add('thumbnail-cell');
 
         // Check if thumbnail exists for .goo or .ctb files
-        const fileExt = filename.toLowerCase().split('.').pop();
         if (fileExt === 'goo' || fileExt === 'ctb') {
-          const baseName = filename.substring(0, filename.lastIndexOf('.'));
           const thumbnailUrl = `/plugin/file_manager_thumbs/thumbnails/${baseName}_big.png`;
           console.log(`Loading thumbnail for ${filename}: ${thumbnailUrl}`);
 
@@ -493,6 +510,13 @@
             } else {
               console.log(`NO ROTATION for ${baseName}`);
             }
+
+            // Update status badge to "Ready"
+            const statusBadge = document.getElementById(`status-${baseName}`);
+            if (statusBadge) {
+              statusBadge.className = 'badge bg-success';
+              statusBadge.innerHTML = '<i class="bi bi-check-circle me-1"></i>Ready';
+            }
           };
 
           // Handle thumbnail load error
@@ -503,6 +527,13 @@
             placeholder.classList.add('thumbnail-placeholder');
             placeholder.innerHTML = '<i class="bi bi-file-earmark"></i>';
             thumbnailCell.replaceChild(placeholder, this);
+
+            // Update status badge to "No Thumbnail"
+            const statusBadge = document.getElementById(`status-${baseName}`);
+            if (statusBadge) {
+              statusBadge.className = 'badge bg-warning';
+              statusBadge.innerHTML = '<i class="bi bi-exclamation-triangle me-1"></i>No Thumbnail';
+            }
           };
 
           // Click to open lightbox
@@ -522,17 +553,54 @@
 
         newRow.appendChild(thumbnailCell);
 
-        // Index cell
-        const indexCell = document.createElement('td');
-        indexCell.textContent = index;
-        indexCell.style.width = '50px';
-        newRow.appendChild(indexCell);
-
         // Filename cell
         const filenameCell = document.createElement('td');
         filenameCell.textContent = filename;
         filenameCell.style.fontFamily = 'monospace';
         newRow.appendChild(filenameCell);
+
+        // Size cell
+        const sizeCell = document.createElement('td');
+        sizeCell.textContent = fileSize;
+        sizeCell.classList.add('text-muted');
+        newRow.appendChild(sizeCell);
+
+        // Location cell
+        const locationCell = document.createElement('td');
+        const locationBadge = document.createElement('span');
+        locationBadge.classList.add('badge');
+        if (location === 'USB') {
+          locationBadge.classList.add('bg-primary');
+          locationBadge.innerHTML = '<i class="bi bi-usb-drive me-1"></i>USB';
+        } else if (location === 'Local') {
+          locationBadge.classList.add('bg-secondary');
+          locationBadge.innerHTML = '<i class="bi bi-device-ssd me-1"></i>Local';
+        } else {
+          locationBadge.classList.add('bg-secondary');
+          locationBadge.textContent = location;
+        }
+        locationCell.appendChild(locationBadge);
+        newRow.appendChild(locationCell);
+
+        // Status cell
+        const statusCell = document.createElement('td');
+        const statusBadge = document.createElement('span');
+        statusBadge.classList.add('badge');
+
+        // Check if this file type should have a thumbnail
+        const shouldHaveThumbnail = fileExt === 'goo' || fileExt === 'ctb';
+
+        if (!shouldHaveThumbnail) {
+          statusBadge.classList.add('bg-secondary');
+          statusBadge.innerHTML = '<i class="bi bi-dash-circle me-1"></i>N/A';
+        } else {
+          // We'll update this when the thumbnail loads/fails
+          statusBadge.classList.add('bg-warning');
+          statusBadge.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Loading';
+          statusBadge.id = `status-${baseName}`;
+        }
+        statusCell.appendChild(statusBadge);
+        newRow.appendChild(statusCell);
 
         // Actions cell
         const actionsCell = document.createElement('td');
@@ -585,7 +653,8 @@
 
       fileRows.forEach(row => {
         if (row.cells.length === 1) return;
-        const fileName = row.cells[2]?.textContent.toLowerCase() || ''; // Changed from cells[1] to cells[2] due to thumbnail column
+        // Search in filename column (index 1)
+        const fileName = row.cells[1]?.textContent.toLowerCase() || '';
         row.style.display = fileName.includes(searchTerm) ? '' : 'none';
       });
     });
