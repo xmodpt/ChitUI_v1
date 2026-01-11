@@ -1007,3 +1007,68 @@ body {
     font-size: 0.45rem;
   }
 }
+
+/* ============================================================
+   PLUGIN DRAG AND DROP STYLES
+   ============================================================ */
+
+/* Plugin card base styles for draggable behavior */
+.plugin-card {
+  cursor: move;
+  cursor: grab;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+}
+
+.plugin-card:active {
+  cursor: grabbing;
+}
+
+.plugin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Visual feedback during drag */
+.plugin-card.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+/* Drop zone indicators */
+.plugin-card.drag-over-top {
+  border-top: 3px solid var(--accent-color);
+  padding-top: calc(1rem - 3px);
+}
+
+.plugin-card.drag-over-bottom {
+  border-bottom: 3px solid var(--accent-color);
+  padding-bottom: calc(1rem - 3px);
+}
+
+/* Smooth transitions for reordering */
+.plugin-card {
+  position: relative;
+}
+
+/* Add a subtle grab indicator icon when hovering over card headers */
+.plugin-card .card-header::after {
+  content: '\F32E';
+  font-family: 'bootstrap-icons';
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: var(--bs-secondary-color);
+  font-size: 1.2rem;
+}
+
+.plugin-card:hover .card-header::after {
+  opacity: 0.5;
+}
+
+.plugin-card:active .card-header::after {
+  opacity: 0.8;
+}

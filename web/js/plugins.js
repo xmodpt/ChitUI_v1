@@ -93,7 +93,15 @@ function injectCard(plugin) {
   const pluginDiv = document.createElement('div');
   pluginDiv.id = `plugin-${plugin.plugin_id}`;
   pluginDiv.className = 'plugin-card';
+  pluginDiv.setAttribute('draggable', 'true');
+  pluginDiv.setAttribute('data-plugin-id', plugin.plugin_id);
   pluginDiv.innerHTML = plugin.html;
+
+  // Add drag event listeners for reordering
+  pluginDiv.addEventListener('dragstart', handleDragStart);
+  pluginDiv.addEventListener('dragover', handleDragOver);
+  pluginDiv.addEventListener('drop', handleDrop);
+  pluginDiv.addEventListener('dragend', handleDragEnd);
 
   container.appendChild(pluginDiv);
 
@@ -473,6 +481,110 @@ function togglePlugin(pluginId, enabled) {
   } else {
     disablePlugin(pluginId);
   }
+}
+
+// ============ DRAG AND DROP FOR PLUGIN REORDERING ============
+
+let draggedElement = null;
+
+function handleDragStart(e) {
+  draggedElement = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', this.innerHTML);
+}
+
+function handleDragOver(e) {
+  if (e.preventDefault) {
+    e.preventDefault();
+  }
+  e.dataTransfer.dropEffect = 'move';
+
+  // Don't show drop indicator on the dragged element itself
+  if (this === draggedElement) {
+    return false;
+  }
+
+  // Remove previous indicators from all cards
+  document.querySelectorAll('.plugin-card').forEach(card => {
+    card.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+
+  // Add visual indicator based on cursor position
+  const rect = this.getBoundingClientRect();
+  const midpoint = rect.top + rect.height / 2;
+  if (e.clientY < midpoint) {
+    this.classList.add('drag-over-top');
+  } else {
+    this.classList.add('drag-over-bottom');
+  }
+
+  return false;
+}
+
+function handleDrop(e) {
+  if (e.stopPropagation) {
+    e.stopPropagation();
+  }
+
+  // Don't drop on itself
+  if (draggedElement !== this) {
+    // Determine drop position
+    const rect = this.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+
+    if (e.clientY < midpoint) {
+      // Insert before
+      this.parentNode.insertBefore(draggedElement, this);
+    } else {
+      // Insert after
+      this.parentNode.insertBefore(draggedElement, this.nextSibling);
+    }
+
+    // Save new order
+    savePluginOrder();
+  }
+
+  // Remove visual indicators
+  this.classList.remove('drag-over-top', 'drag-over-bottom');
+
+  return false;
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+
+  // Remove all visual indicators
+  document.querySelectorAll('.plugin-card').forEach(card => {
+    card.classList.remove('drag-over-top', 'drag-over-bottom', 'dragging');
+  });
+}
+
+function savePluginOrder() {
+  const container = document.querySelector('.app-content');
+  const pluginCards = container.querySelectorAll('.plugin-card');
+  const order = Array.from(pluginCards).map(card => card.getAttribute('data-plugin-id'));
+
+  console.log('Saving plugin order:', order);
+
+  fetch('/plugins/order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ order: order })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Plugin order saved successfully');
+    } else {
+      console.error('Failed to save plugin order:', data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error saving plugin order:', error);
+  });
 }
 
 // Initialize plugins on page load
