@@ -434,6 +434,8 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
 
             # Try different download URL patterns based on printer API
             url_patterns = [
+                f'http://{printer_ip}:3030/media/sda/{filename}',  # Elegoo USB drive pattern
+                f'http://{printer_ip}:3030/media/sdb/{filename}',  # Alternative USB drive
                 f'http://{printer_ip}:3030/download/{storage_type}/{filename}',
                 f'http://{printer_ip}:3030/file/{storage_type}/{filename}',
                 f'http://{printer_ip}:3030/files/{storage_type}/{filename}',
