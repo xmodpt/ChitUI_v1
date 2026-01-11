@@ -1,0 +1,12 @@
+{
+  "name": "File Manager with Thumbnails",
+  "version": "1.0.0",
+  "author": "ChitUI Team",
+  "description": "Advanced file management system with thumbnail support for .goo and .ctb files. Includes upload, download, delete, print capabilities, and automatic thumbnail extraction and display.",
+  "ui_integration": {
+    "type": "card",
+    "location": "main-content",
+    "icon": "bi-folder-image",
+    "title": "Files (Thumbs)"
+  }
+}

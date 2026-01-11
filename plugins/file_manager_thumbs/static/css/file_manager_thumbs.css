@@ -1,0 +1,295 @@
+/**
+ * File Manager with Thumbnails Plugin Styles
+ */
+
+/* Upload Area */
+.upload-area {
+  background: var(--bs-tertiary-bg);
+  border: 2px dashed var(--bs-border-color);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.upload-area:hover,
+.upload-area.drag-over {
+  border-color: var(--accent-color);
+  background: var(--bs-secondary-bg);
+}
+
+/* Progress Bar */
+.progress-enhanced {
+  height: 2rem;
+  border-radius: 0.5rem;
+  background: var(--bs-tertiary-bg);
+}
+
+.progress-enhanced .progress-bar {
+  background: var(--accent-color);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* File Manager Container */
+.file-manager-container {
+  min-height: 300px;
+}
+
+.file-manager-toolbar .input-group {
+  max-width: 400px;
+}
+
+#fileManagerTable {
+  margin-bottom: 0;
+}
+
+#fileManagerTable thead {
+  background: var(--bs-tertiary-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#fileManagerTable thead th {
+  font-weight: 600;
+  border-bottom: 2px solid var(--bs-border-color);
+  padding: 0.75rem 1rem;
+}
+
+#fileManagerTable tbody tr {
+  transition: background-color 0.2s;
+}
+
+#fileManagerTable tbody tr:hover {
+  background: var(--bs-secondary-bg);
+}
+
+#fileManagerTable tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+/* File row actions */
+.file-row i {
+  cursor: pointer;
+  margin: 0 0.5rem;
+  transition: all 0.2s;
+}
+
+.file-row i:hover {
+  transform: scale(1.2);
+}
+
+/* Thumbnail Styles */
+.thumbnail-cell {
+  width: 100px;
+  text-align: center;
+  padding: 0.5rem !important;
+}
+
+.file-thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  background: var(--bs-tertiary-bg);
+  border: 2px solid var(--bs-border-color);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.file-thumbnail:hover {
+  transform: scale(1.05);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.file-thumbnail.auto-rotate {
+  transform: rotate(-90deg);
+}
+
+.file-thumbnail.auto-rotate:hover {
+  transform: rotate(-90deg) scale(1.05);
+}
+
+.thumbnail-placeholder {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bs-tertiary-bg);
+  border: 2px solid var(--bs-border-color);
+  border-radius: 0.5rem;
+  color: var(--bs-secondary-color);
+  font-size: 2rem;
+}
+
+/* Lightbox for Full-Size Preview */
+.thumbnail-lightbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 40px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10000;
+}
+
+.lightbox-close:hover {
+  color: var(--accent-color);
+}
+
+.lightbox-content {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s;
+}
+
+.lightbox-content.auto-rotate {
+  transform: rotate(-90deg);
+}
+
+/* Circular Storage Gauge */
+.storage-gauges-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color);
+  border-radius: 0.75rem;
+}
+
+.gauge-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.circular-gauge {
+  position: relative;
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gauge-bg {
+  stroke: var(--bs-border-color);
+  opacity: 0.3;
+}
+
+.gauge-progress {
+  stroke: var(--success-color);
+  stroke-dasharray: 502.65; /* 2 * PI * 80 */
+  stroke-dashoffset: 502.65;
+  transition: stroke-dashoffset 0.5s ease, stroke 0.3s ease;
+}
+
+.gauge-progress.warning {
+  stroke: var(--warning-color);
+}
+
+.gauge-progress.danger {
+  stroke: var(--danger-color);
+}
+
+.gauge-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.gauge-percentage {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bs-body-color);
+  line-height: 1;
+}
+
+.gauge-label {
+  font-size: 0.5rem;
+  color: var(--bs-secondary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.storage-details {
+  color: var(--bs-secondary-color);
+}
+
+/* Responsive gauge on smaller screens */
+@media (max-width: 576px) {
+  .storage-gauges-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .circular-gauge {
+    width: 60px;
+    height: 60px;
+  }
+
+  .gauge-percentage {
+    font-size: 0.875rem;
+  }
+
+  .gauge-label {
+    font-size: 0.45rem;
+  }
+
+  .thumbnail-cell {
+    width: 70px;
+  }
+
+  .file-thumbnail,
+  .thumbnail-placeholder {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* Toast Notification */
+#toastUpload {
+  min-width: 300px;
+}
+
+#toastUpload .toast-body {
+  padding: 1rem;
+  font-weight: 500;
+}
