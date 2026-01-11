@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOO/CTB File Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 20px 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #4a9eff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1::before {
+            content: "📁";
+            font-size: 28px;
+        }
+
+        .upload-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .btn {
+            background: #4a9eff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #3a8eef;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: #ff4444;
+        }
+
+        .btn-danger:hover {
+            background: #ee3333;
+        }
+
+        .btn-secondary {
+            background: #555;
+        }
+
+        .btn-secondary:hover {
+            background: #666;
+        }
+
+        .stats {
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-label {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            color: #4a9eff;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .file-table-wrapper {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #1a1a1a;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: #4a9eff;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #3a3a3a;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #353535;
+        }
+
+        td {
+            padding: 15px 20px;
+            vertical-align: middle;
+        }
+
+        .thumb-cell {
+            width: 120px;
+            text-align: center;
+        }
+
+        .thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: #1a1a1a;
+            border: 2px solid #3a3a3a;
+            transition: transform 0.3s;
+        }
+
+        /* Auto-rotate landscape images to portrait */
+        .thumbnail.auto-rotate {
+            transform: rotate(-90deg) !important;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s;
+        }
+
+        .lightbox img.auto-rotate {
+            transform: rotate(-90deg) !important;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #e0e0e0;
+            font-size: 15px;
+        }
+
+        .file-size {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .file-date {
+            color: #888;
+            font-size: 13px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-ready {
+            background: #2d5016;
+            color: #7fdb4f;
+        }
+
+        .status-missing {
+            background: #5c2d1a;
+            color: #ffaa44;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2d2d2d;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #3a3a3a;
+            border-top: 3px solid #4a9eff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #2d2d2d;
+            padding: 15px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1001;
+            min-width: 300px;
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            border-left: 4px solid #7fdb4f;
+        }
+
+        .notification.error {
+            border-left: 4px solid #ff4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Lightbox styles */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .lightbox.show {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .thumbnail-clickable {
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .thumbnail-clickable:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+        }
+
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+                text-align: center;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .upload-section {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .file-input-wrapper {
+                width: 100%;
+            }
+
+            .file-input-wrapper .btn {
+                width: 100%;
+            }
+
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .stat-item {
+                justify-content: center;
+            }
+
+            /* Collapsed card layout for mobile */
+            .file-table-wrapper {
+                border-radius: 0;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tbody tr {
+                margin-bottom: 12px;
+                border-radius: 8px;
+                border: 1px solid #3a3a3a;
+                padding: 0;
+                background: #2d2d2d;
+                overflow: hidden;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            tbody tr:hover {
+                background: #353535;
+                border-color: #4a9eff;
+            }
+
+            /* Collapsed view - only thumb and name */
+            tbody tr td {
+                display: none;
+            }
+
+            tbody tr .thumb-cell,
+            tbody tr td[data-label="File Name"] {
+                display: flex;
+                padding: 12px;
+            }
+
+            .thumb-cell {
+                width: auto !important;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 15px;
+                padding: 12px !important;
+                border-bottom: 1px solid #3a3a3a;
+            }
+
+            .thumbnail {
+                width: 60px !important;
+                height: 60px !important;
+                flex-shrink: 0;
+            }
+
+            td[data-label="File Name"] {
+                padding: 12px !important;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .file-name {
+                font-size: 15px;
+                word-break: break-word;
+                width: 100%;
+            }
+
+            /* Expanded view - show all details */
+            tbody tr.expanded {
+                background: #353535;
+            }
+
+            tbody tr.expanded td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 12px;
+                border: none;
+                border-top: 1px solid #3a3a3a;
+            }
+
+            tbody tr.expanded .thumb-cell {
+                display: flex;
+                border-bottom: 1px solid #3a3a3a;
+            }
+
+            tbody tr.expanded td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #4a9eff;
+                text-transform: uppercase;
+                font-size: 11px;
+                flex-shrink: 0;
+                margin-right: 10px;
+            }
+
+            tbody tr.expanded .thumb-cell::before,
+            tbody tr.expanded td[data-label="File Name"]::before {
+                display: none;
+            }
+
+            tbody tr.expanded td[data-label="File Name"] {
+                border-top: none;
+            }
+
+            .actions {
+                flex-direction: column;
+                width: 100%;
+                gap: 8px;
+            }
+
+            .btn-small {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .lightbox img {
+                max-width: 95%;
+                max-height: 95%;
+            }
+
+            .lightbox-close {
+                top: 10px;
+                right: 10px;
+                width: 50px;
+                height: 50px;
+                font-size: 32px;
+            }
+
+            .notification {
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+
+            /* Prevent thumbnail click from expanding card */
+            .thumbnail-clickable {
+                pointer-events: all;
+                z-index: 10;
+                position: relative;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .header h1::before {
+                font-size: 24px;
+            }
+
+            .thumbnail {
+                width: 50px !important;
+                height: 50px !important;
+            }
+
+            .btn {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+
+            .stat-value {
+                font-size: 16px;
+            }
+
+            .file-name {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GOO/CTB File Manager</h1>
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <label for="fileInput" class="btn">
+                        📤 Upload File
+                    </label>
+                    <input type="file" id="fileInput" accept=".goo,.ctb" multiple>
+                </div>
+                <button class="btn btn-secondary" onclick="refreshFiles()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-label">Total Files:</span>
+                <span class="stat-value" id="totalFiles">{{ files|length }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">With Thumbnails:</span>
+                <span class="stat-value" id="withThumbs">{{ files|selectattr('has_big_thumb')|list|length }}</span>
+            </div>
+        </div>
+
+        <div class="file-table-wrapper">
+            {% if files %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Preview</th>
+                        <th>File Name</th>
+                        <th>Size</th>
+                        <th>Modified</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="fileTableBody">
+                    {% for file in files %}
+                    <tr data-filename="{{ file.name }}">
+                        <td class="thumb-cell">
+                            {% if file.has_big_thumb %}
+                            <img src="/uploads/{{ file.stem }}_big.png" 
+                                 class="thumbnail thumbnail-clickable" 
+                                 alt="Preview"
+                                 onload="console.log('{{ file.stem }}:', this.naturalWidth, 'x', this.naturalHeight); if(this.naturalWidth > this.naturalHeight) { console.log('ROTATING {{ file.stem }}'); this.classList.add('auto-rotate'); this.dataset.needsRotation='true'; } else { console.log('NO ROTATION for {{ file.stem }}'); }"
+                                 onclick="openLightbox('/uploads/{{ file.stem }}_big.png', this.dataset.needsRotation === 'true')">
+                            {% else %}
+                            <div class="thumbnail" style="display: flex; align-items: center; justify-content: center; color: #555;">
+                                📄
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td data-label="File Name">
+                            <div class="file-name">{{ file.name }}</div>
+                        </td>
+                        <td data-label="Size">
+                            <div class="file-size">{{ file.size_mb }} MB</div>
+                        </td>
+                        <td data-label="Modified">
+                            <div class="file-date">{{ file.modified }}</div>
+                        </td>
+                        <td data-label="Status">
+                            {% if file.has_big_thumb %}
+                            <span class="status-badge status-ready">✓ Ready</span>
+                            {% else %}
+                            <span class="status-badge status-missing">⚠ No Thumbnail</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Actions">
+                            <div class="actions">
+                                {% if not file.has_big_thumb %}
+                                <button class="btn btn-small" onclick="extractThumbnail('{{ file.name }}')">
+                                    🔄 Extract
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-small btn-danger" onclick="deleteFile('{{ file.name }}')">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📂</div>
+                <h2>No Files Yet</h2>
+                <p>Upload your first .goo or .ctb file to get started</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div style="text-align: center; color: #888;">Processing...</div>
+    </div>
+
+    <div class="notification" id="notification">
+        <div id="notificationMessage"></div>
+    </div>
+
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <div class="lightbox-close">×</div>
+        <img id="lightboxImage" src="" alt="Full size preview">
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        
+        fileInput.addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (files.length === 0) return;
+
+            showLoading();
+
+            for (let file of files) {
+                await uploadFile(file);
+            }
+
+            hideLoading();
+            refreshFiles();
+            fileInput.value = '';
+        });
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`✓ ${result.filename} uploaded successfully`, 'success');
+                } else {
+                    showNotification(`✗ Upload failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`✗ Upload failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function extractThumbnail(filename) {
+            showLoading();
+
+            try {
+                const response = await fetch(`/extract/${filename}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`✓ Thumbnail extracted for ${filename}`, 'success');
+                    refreshFiles();
+                } else {
+                    showNotification(`✗ Extraction failed`, 'error');
+                }
+            } catch (error) {
+                showNotification(`✗ Error: ${error.message}`, 'error');
+            }
+
+            hideLoading();
+        }
+
+        async function deleteFile(filename) {
+            if (!confirm(`Delete ${filename} and its thumbnails?`)) {
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch(`/delete/${filename}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification(`✓ ${filename} deleted`, 'success');
+                    refreshFiles();
+                } else {
+                    showNotification(`✗ Delete failed`, 'error');
+                }
+            } catch (error) {
+                showNotification(`✗ Error: ${error.message}`, 'error');
+            }
+
+            hideLoading();
+        }
+
+        function refreshFiles() {
+            location.reload();
+        }
+
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            messageEl.textContent = message;
+            notification.className = `notification ${type} show`;
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function openLightbox(imageSrc, needsRotation) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightboxImage');
+            
+            lightboxImage.src = imageSrc;
+            
+            // Apply rotation to lightbox image if needed
+            if (needsRotation === true || needsRotation === 'true') {
+                lightboxImage.classList.add('auto-rotate');
+            } else {
+                lightboxImage.classList.remove('auto-rotate');
+            }
+            
+            lightbox.classList.add('show');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('show');
+        }
+
+        // Close lightbox on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+
+        // Mobile: Toggle card expansion
+        function setupMobileCards() {
+            if (window.innerWidth <= 768) {
+                const rows = document.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    // Remove any existing listeners
+                    const newRow = row.cloneNode(true);
+                    row.parentNode.replaceChild(newRow, row);
+                    
+                    // Add click listener to toggle expansion
+                    newRow.addEventListener('click', function(e) {
+                        // Don't expand if clicking thumbnail (for lightbox)
+                        if (e.target.classList.contains('thumbnail-clickable')) {
+                            return;
+                        }
+                        
+                        // Don't expand if clicking buttons
+                        if (e.target.closest('.btn')) {
+                            return;
+                        }
+                        
+                        // Toggle expanded class
+                        this.classList.toggle('expanded');
+                    });
+                });
+            }
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', setupMobileCards);
+        
+        // Re-run on window resize
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(setupMobileCards, 250);
+        });
+
+        // Auto-rotate landscape images to portrait
+        function checkAndRotate(img) {
+            // If image is landscape (wider than tall), rotate it
+            if (img.naturalWidth > img.naturalHeight) {
+                img.classList.add('auto-rotate');
+                img.dataset.needsRotation = 'true';
+            } else {
+                img.classList.remove('auto-rotate');
+                img.dataset.needsRotation = 'false';
+            }
+        }
+
+        function initRotation() {
+            const thumbnails = document.querySelectorAll('.thumbnail-clickable');
+            
+            thumbnails.forEach(img => {
+                if (img.complete && img.naturalWidth > 0) {
+                    checkAndRotate(img);
+                } else {
+                    img.addEventListener('load', function() {
+                        checkAndRotate(this);
+                    });
+                }
+            });
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', initRotation);
+        
+        // Also run after a short delay to catch any late-loading images
+        window.addEventListener('load', () => {
+            setTimeout(initRotation, 100);
+        });
+    </script>
+</body>
+</html>
