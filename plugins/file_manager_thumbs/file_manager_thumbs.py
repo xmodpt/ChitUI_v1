@@ -1368,17 +1368,7 @@ class FileManagerThumbsPlugin(ChitUIPlugin):
             os.remove(mount_path)
             logger.info(f"Deleted file from mount point: {mount_path}")
 
-            # Delete thumbnails if they exist
-            base_path = Path(mount_path)
-            small_thumb = base_path.parent / f"{base_path.stem}_small.png"
-            big_thumb = base_path.parent / f"{base_path.stem}_big.png"
-
-            if small_thumb.exists():
-                small_thumb.unlink()
-                logger.info(f"Deleted small thumbnail: {small_thumb}")
-            if big_thumb.exists():
-                big_thumb.unlink()
-                logger.info(f"Deleted big thumbnail: {big_thumb}")
+            # Note: Thumbnails are cleaned up from cache by the action_delete handler
 
             # Reload the USB gadget so the printer sees the change
             logger.info("Starting USB gadget reload after delete...")
