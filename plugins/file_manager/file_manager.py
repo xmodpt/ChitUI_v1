@@ -125,7 +125,7 @@ class FileManagerPlugin(ChitUIPlugin):
     def get_blueprint(self):
         """Return Flask Blueprint for file manager routes"""
         bp = Blueprint('file_manager', __name__,
-                      static_folder='static',
+                      static_folder=self.get_static_folder(),
                       static_url_path='/static')
 
         @bp.route('/upload', methods=['GET', 'POST'])
